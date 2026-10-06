@@ -15,7 +15,9 @@ Stand: **Phase 1** (Grundgerüst). Karteikarten/MC (Phase 2) und Übungen/Dashbo
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Supabase → Project Settings → API)
    - `SUPABASE_SERVICE_ROLE_KEY` (nur Server, nur für den täglichen iCal-Cron)
    - `CRON_SECRET` (lange Zufallszeichenkette; Vercel sendet sie als `Authorization: Bearer …` an den Cron)
-4. **Vercel**: Repo verbinden, Env-Variablen setzen, deployen. `vercel.json` registriert den täglichen Import (05:00 UTC).
+4. **Vercel**: Repo verbinden, Env-Variablen setzen (Production **und** Preview), deployen. `vercel.json` registriert den täglichen Import (05:00 UTC).
+   - Ohne `NEXT_PUBLIC_SUPABASE_*` schlägt der Build **absichtlich** fehl (`Supabase ist nicht konfiguriert`): die Werte werden beim Build eingebacken, ein Deployment ohne sie wäre zur Laufzeit kaputt. Nach dem Setzen neu deployen.
+   - *Settings → Deployment Protection → Vercel Authentication* auf „Only Preview Deployments" stellen, sonst verlangt auch die Production-URL einen Vercel-Login und die PWA auf dem Handy funktioniert nicht.
 5. In der App: Startseite → „Semester HS26 einrichten", dann *Einstellungen* → iCal-Abo-Link speichern → „Jetzt synchronisieren".
    Nicht zugeordnete Termine landen in der Inbox; Stichwörter pro Modul sind in den Einstellungen editierbar.
 6. Auf dem Handy: Seite öffnen → „Zum Home-Bildschirm" (iOS) bzw. „App installieren" (Android).
