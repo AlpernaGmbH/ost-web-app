@@ -1,10 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { missingSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 /** Verified user of the current request (asks the Supabase Auth server, not just the cookie). */
 export const getUser = cache(async () => {
+  if (missingSupabaseEnv().length > 0) return null;
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   return data.user;

@@ -18,7 +18,12 @@ function authorized(request: Request): boolean {
 export async function GET(request: Request) {
   if (!authorized(request)) return new NextResponse("Unauthorized", { status: 401 });
 
-  const db = createAdminClient();
+  let db: ReturnType<typeof createAdminClient>;
+  try {
+    db = createAdminClient();
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "not configured" }, { status: 503 });
+  }
   const { data: semesters, error } = await db
     .from("semesters")
     .select("id, user_id, start_date, ical_url")

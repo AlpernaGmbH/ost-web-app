@@ -1,10 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseEnv } from "@/lib/supabase/env";
+import { missingSupabaseEnv, supabaseEnv } from "@/lib/supabase/env";
 
 // Refreshes the Supabase session cookie and keeps logged-out visitors on /login.
 // This is an optimistic gate only; every Server Action and Route Handler re-checks via requireUser().
 export async function proxy(request: NextRequest) {
+  // Not configured yet: let every request through so the setup page (app layout) can explain what is missing.
+  if (missingSupabaseEnv().length > 0) return NextResponse.next({ request });
   const { url, key } = supabaseEnv();
   let response = NextResponse.next({ request });
 
