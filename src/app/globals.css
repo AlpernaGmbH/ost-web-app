@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --danger: #dc2626;
+  --success: #15803d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1020;
+    --foreground: #e5e7eb;
+    --card: #131a2e;
+    --muted: #94a3b8;
+    --border: #243049;
+    --primary: #818cf8;
+    --primary-foreground: #0b1020;
+    --danger: #f87171;
+    --success: #4ade80;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* rendered markdown notes (react-markdown + KaTeX) */
+.note-prose {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.note-prose > * + * { margin-top: 0.75rem; }
+.note-prose h1 { font-size: 1.4rem; font-weight: 700; margin-top: 1.25rem; }
+.note-prose h2 { font-size: 1.2rem; font-weight: 700; margin-top: 1.1rem; }
+.note-prose h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1rem; }
+.note-prose ul { list-style: disc; padding-left: 1.4rem; }
+.note-prose ol { list-style: decimal; padding-left: 1.4rem; }
+.note-prose li + li { margin-top: 0.25rem; }
+.note-prose a { color: var(--primary); text-decoration: underline; }
+.note-prose blockquote { border-left: 3px solid var(--border); padding-left: 0.75rem; color: var(--muted); }
+.note-prose code { background: var(--border); border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.9em; }
+.note-prose pre { background: var(--border); border-radius: 8px; padding: 0.75rem; overflow-x: auto; }
+.note-prose pre code { background: none; padding: 0; }
+.note-prose table { border-collapse: collapse; display: block; overflow-x: auto; }
+.note-prose th, .note-prose td { border: 1px solid var(--border); padding: 0.35rem 0.6rem; }
+.note-prose .katex-display { overflow-x: auto; overflow-y: hidden; }
