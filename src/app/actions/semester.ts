@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
+import { describeDbError } from "@/lib/db/errors";
 import type { Semester } from "@/lib/db/types";
 import type { FormState } from "@/lib/form-state";
 import { normalizeFeedUrl } from "@/lib/ical/feed-url";
@@ -21,25 +22,34 @@ const DEFAULT_MODULES = [
 ] as const;
 
 /** First-run setup: HS26 (W01 = 14.09.2026) with the four modules. Does nothing if a semester exists. */
-export async function bootstrapSemester(): Promise<void> {
+export async function bootstrapSemester(): Promise<FormState> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  const { count } = await supabase.from("semesters").select("id", { count: "exact", head: true });
-  if ((count ?? 0) > 0) return;
+  const { count, error: countError } = await supabase.from("semesters").select("id", { count: "exact", head: true });
+  if (countError) return { ok: false, message: describeDbError(countError) };
+  if ((count ?? 0) > 0) {
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Semester existiert bereits." };
+  }
 
   const { data: semester, error } = await supabase
     .from("semesters")
     .insert({ user_id: user.id, name: "HS26", start_date: "2026-09-14" })
     .select("id")
     .single();
-  if (error || !semester) throw new Error(`Semester anlegen: ${error?.message}`);
+  if (error || !semester) return { ok: false, message: describeDbError(error ?? { message: "Semester konnte nicht angelegt werden" }) };
 
   const { error: moduleError } = await supabase.from("modules").insert(
     DEFAULT_MODULES.map((m, i) => ({ ...m, user_id: user.id, semester_id: semester.id, ects: m.kind === "language" ? 0 : 6, sort_order: i })),
   );
-  if (moduleError) throw new Error(`Module anlegen: ${moduleError.message}`);
+  if (moduleError) {
+    // do not leave a half-initialised semester behind: the next click would see it and skip the modules
+    await supabase.from("semesters").delete().eq("id", semester.id);
+    return { ok: false, message: describeDbError(moduleError) };
+  }
   revalidatePath("/", "layout");
+  return { ok: true, message: "Semester HS26 eingerichtet." };
 }
 
 const semesterForm = z.object({

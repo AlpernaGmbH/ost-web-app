@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { bootstrapSemester } from "@/app/actions/semester";
-import { Button, Card, PageTitle } from "@/components/ui";
+import { BootstrapForm } from "@/components/forms";
+import { Card, PageTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
+import { describeDbError } from "@/lib/db/errors";
 import type { Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -12,12 +13,23 @@ export default async function HomePage() {
   const supabase = await createClient();
   const now = new Date();
 
-  const { data: semester } = await supabase
+  const { data: semester, error: semesterError } = await supabase
     .from("semesters")
     .select("id, name, start_date")
     .order("start_date", { ascending: false })
     .limit(1)
     .maybeSingle<Pick<Semester, "id" | "name" | "start_date">>();
+
+  if (semesterError) {
+    return (
+      <>
+        <PageTitle title="Datenbank nicht bereit" />
+        <Card className="space-y-2">
+          <p className="text-sm">{describeDbError(semesterError)}</p>
+        </Card>
+      </>
+    );
+  }
 
   if (!semester) {
     return (
@@ -28,9 +40,7 @@ export default async function HomePage() {
             Legt das Semester HS26 (W01 = 14.09.2026) mit WMS, SYS, VHR und Englisch an. Namen, ECTS und
             Stundenplan-Zuordnung lassen sich danach in den Einstellungen ändern.
           </p>
-          <form action={bootstrapSemester}>
-            <Button type="submit">Semester HS26 einrichten</Button>
-          </form>
+          <BootstrapForm />
         </Card>
       </>
     );

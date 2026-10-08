@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createLecture } from "@/app/actions/lectures";
-import { saveModule, saveSemester, syncNow } from "@/app/actions/semester";
+import { bootstrapSemester, saveModule, saveSemester, syncNow } from "@/app/actions/semester";
 import type { FormState } from "@/lib/form-state";
 import { Button, FormMessage, inputClass } from "./ui";
 
@@ -125,6 +125,18 @@ export function ModuleForm({
         </Button>
         <FormMessage state={state} />
       </div>
+    </form>
+  );
+}
+
+export function BootstrapForm() {
+  const [state, action, pending] = useActionState(bootstrapSemester, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Richtet ein …" : "Semester HS26 einrichten"}
+      </Button>
     </form>
   );
 }
