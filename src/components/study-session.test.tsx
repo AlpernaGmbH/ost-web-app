@@ -62,7 +62,7 @@ describe("write mode", () => {
   it("accepts any meaning case-insensitively and shows 'Richtig'", async () => {
     const user = userEvent.setup();
     render(<StudySession mode="write" entries={[entry("a", "to run", "rennen; laufen")]} {...props} />);
-    await user.type(screen.getByLabelText(/Übersetzung auf Deutsch/), "Laufen");
+    await user.type(screen.getByLabelText(/Antwort: Bedeutung/), "Laufen");
     await user.click(screen.getByRole("button", { name: "Prüfen" }));
     expect(screen.getByTestId("feedback")).toHaveTextContent("Richtig!");
     await user.click(screen.getByRole("button", { name: "Weiter" }));
@@ -72,7 +72,7 @@ describe("write mode", () => {
   it("flags a typo as correct-but-hard and reveals the right spelling", async () => {
     const user = userEvent.setup();
     render(<StudySession mode="write" entries={[entry("a", "achieve", "erreichen")]} {...props} />);
-    await user.type(screen.getByLabelText(/Übersetzung auf Deutsch/), "erreichn");
+    await user.type(screen.getByLabelText(/Antwort: Bedeutung/), "erreichn");
     await user.click(screen.getByRole("button", { name: "Prüfen" }));
     expect(screen.getByTestId("feedback")).toHaveTextContent("Fast richtig");
     await user.click(screen.getByRole("button", { name: "Weiter" }));
@@ -82,14 +82,14 @@ describe("write mode", () => {
   it("shows the correct answer after a wrong one and repeats the word", async () => {
     const user = userEvent.setup();
     render(<StudySession mode="write" entries={[entry("a", "house", "Haus")]} {...props} />);
-    await user.type(screen.getByLabelText(/Übersetzung auf Deutsch/), "Maus");
+    await user.type(screen.getByLabelText(/Antwort: Bedeutung/), "Maus");
     await user.click(screen.getByRole("button", { name: "Prüfen" }));
     expect(screen.getByTestId("feedback")).toHaveTextContent("Leider falsch");
     expect(screen.getByTestId("feedback")).toHaveTextContent("Haus");
     await user.click(screen.getByRole("button", { name: "Weiter" }));
     expect(recordReview).toHaveBeenCalledWith({ cardId: "a", rating: 0, mode: "write" });
     expect(screen.getByText(/Wiederholung/)).toBeVisible();
-    expect(screen.getByLabelText(/Übersetzung auf Deutsch/)).toHaveValue(""); // input is cleared
+    expect(screen.getByLabelText(/Antwort: Bedeutung/)).toHaveValue(""); // input is cleared
   });
 });
 

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteDocument } from "@/app/actions/documents";
 import { ConfirmButton } from "@/components/confirm-button";
-import { DeckForm, LectureForm } from "@/components/forms";
+import { DeckForm, ImportUnitsForm, LectureForm } from "@/components/forms";
+import { StudyForm } from "@/components/study-form";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
 import { requireUser } from "@/lib/auth";
@@ -11,6 +12,7 @@ import type { DocumentRow, Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDay, formatSize, formatTime } from "@/lib/format";
 import { parseUuidOrNotFound } from "@/lib/ids";
 import { createClient } from "@/lib/supabase/server";
+import { canUseChoice } from "@/lib/vocab/queue";
 import { isDue } from "@/lib/vocab/srs";
 import { formatWeek, shortDate, weekNumber, weekRange, zurichDate } from "@/lib/week";
 
@@ -224,7 +226,7 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
   const supabase = await createClient();
   const [decksRes, cardsRes] = await Promise.all([
     supabase.from("decks").select("id, name").eq("module_id", moduleId).order("created_at"),
-    supabase.from("cards").select("deck_id, due_at, status").eq("module_id", moduleId).eq("kind", "vocab").limit(10000),
+    supabase.from("cards").select("deck_id, back_md, due_at, status").eq("module_id", moduleId).eq("kind", "vocab").limit(10000),
   ]);
 
   const error = decksRes.error ?? cardsRes.error;
@@ -238,21 +240,24 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
 
   const now = new Date();
   const stats = new Map<string, { total: number; due: number }>();
-  for (const c of cardsRes.data ?? []) {
-    if (!c.deck_id || c.status !== "active") continue;
+  const active = (cardsRes.data ?? []).filter((c) => c.status === "active");
+  for (const c of active) {
+    if (!c.deck_id) continue;
     const entry = stats.get(c.deck_id) ?? { total: 0, due: 0 };
     entry.total++;
     if (isDue({ due_at: c.due_at }, now)) entry.due++;
     stats.set(c.deck_id, entry);
   }
   const decks = decksRes.data ?? [];
+  const totalWords = active.length;
+  const totalDue = active.filter((c) => isDue({ due_at: c.due_at }, now)).length;
 
   return (
     <div className="space-y-4">
       {decks.length === 0 ? (
         <Card>
           <p className="text-sm text-muted">
-            Noch keine Wortliste. Lege unten eine Liste an (z. B. pro Unit) und füge deine Wörter ein.
+            Noch keine Wortliste. Importiere unten alle Units auf einmal oder lege eine leere Liste an.
           </p>
         </Card>
       ) : (
@@ -281,8 +286,31 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
         </ul>
       )}
 
+      {totalWords > 0 ? (
+        <section aria-labelledby="all-words" className="space-y-3 pt-2">
+          <h2 id="all-words" className="font-semibold">
+            Alle Listen zusammen lernen
+          </h2>
+          <p className="text-sm text-muted">
+            {totalWords} Wörter in {decks.length} Listen · {totalDue} fällig oder neu
+          </p>
+          <StudyForm
+            action={`/m/${moduleId}/vocab/all/study`}
+            choiceOk={canUseChoice(active.map((c) => ({ back_md: String(c.back_md) })))}
+            defaultScope={totalDue > 0 ? "due" : "all"}
+          />
+        </section>
+      ) : null}
+
       <details className="rounded-xl border border-border bg-card" open={decks.length === 0}>
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Neue Wortliste</summary>
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Mehrere Listen auf einmal importieren</summary>
+        <div className="border-t border-border p-4">
+          <ImportUnitsForm moduleId={moduleId} />
+        </div>
+      </details>
+
+      <details className="rounded-xl border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Neue leere Wortliste</summary>
         <div className="border-t border-border p-4">
           <DeckForm moduleId={moduleId} />
         </div>

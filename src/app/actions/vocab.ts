@@ -1,12 +1,13 @@
 "use server";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import type { FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
-import { parseImport } from "@/lib/vocab/import";
+import { parseImport, parseSections, type ImportRow } from "@/lib/vocab/import";
 import { schedule, type Rating } from "@/lib/vocab/srs";
 
 const uuid = z.string().uuid();
@@ -101,7 +102,39 @@ export async function deleteCard(formData: FormData): Promise<void> {
 const IMPORT_CHUNK = 200;
 const IMPORT_MAX_ROWS = 2000;
 
-/** Bulk import of a pasted word list. Words already in the deck (same English term) are skipped. */
+/** Inserts the rows that are not in the deck yet (same English term). Safe to run again after a failure. */
+async function insertNewCards(
+  supabase: SupabaseClient,
+  userId: string,
+  deck: { id: string; module_id: string },
+  rows: ImportRow[],
+): Promise<{ added: number; existing: number; error?: string }> {
+  const { data: existingRows, error: existingError } = await supabase.from("cards").select("front_md").eq("deck_id", deck.id).limit(5000);
+  if (existingError) return { added: 0, existing: 0, error: describeDbError(existingError) };
+  const known = new Set((existingRows ?? []).map((c) => String(c.front_md).toLowerCase()));
+
+  const fresh = rows.filter((r) => !known.has(r.front.toLowerCase()));
+  let added = 0;
+  for (let i = 0; i < fresh.length; i += IMPORT_CHUNK) {
+    const chunk = fresh.slice(i, i + IMPORT_CHUNK);
+    const { error } = await supabase.from("cards").insert(
+      chunk.map((r) => ({
+        user_id: userId,
+        module_id: deck.module_id,
+        deck_id: deck.id,
+        kind: "vocab",
+        front_md: r.front,
+        back_md: r.back,
+        data: r.example ? { example: r.example } : {},
+      })),
+    );
+    if (error) return { added, existing: rows.length - fresh.length, error: describeDbError(error) };
+    added += chunk.length;
+  }
+  return { added, existing: rows.length - fresh.length };
+}
+
+/** Bulk import of a pasted word list into one deck. Words already in the deck are skipped. */
 export async function importCards(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser();
   const parsedForm = z.object({ deckId: uuid, text: z.string().max(200_000, "Text ist zu lang") }).safeParse(Object.fromEntries(formData));
@@ -117,29 +150,75 @@ export async function importCards(_prev: FormState, formData: FormData): Promise
   const { data: deck } = await supabase.from("decks").select("id, module_id").eq("id", parsedForm.data.deckId).maybeSingle();
   if (!deck) return { ok: false, message: "Liste nicht gefunden" };
 
-  const { data: existing, error: existingError } = await supabase.from("cards").select("front_md").eq("deck_id", deck.id).limit(5000);
-  if (existingError) return { ok: false, message: describeDbError(existingError) };
-  const known = new Set((existing ?? []).map((c) => String(c.front_md).toLowerCase()));
+  const result = await insertNewCards(supabase, user.id, deck, rows);
+  revalidatePath(`/m/${deck.module_id}`, "layout");
+  if (result.error) return { ok: false, message: `${result.added} importiert, dann Fehler: ${result.error}` };
 
-  const fresh = rows.filter((r) => !known.has(r.front.toLowerCase()));
-  for (let i = 0; i < fresh.length; i += IMPORT_CHUNK) {
-    const { error } = await supabase.from("cards").insert(
-      fresh.slice(i, i + IMPORT_CHUNK).map((r) => ({
-        user_id: user.id,
-        module_id: deck.module_id,
-        deck_id: deck.id,
-        kind: "vocab",
-        front_md: r.front,
-        back_md: r.back,
-        data: r.example ? { example: r.example } : {},
-      })),
-    );
-    if (error) return { ok: false, message: `${i} von ${fresh.length} importiert, dann Fehler: ${describeDbError(error)}` };
+  const parts = [`${result.added} importiert`];
+  if (result.existing > 0) parts.push(`${result.existing} schon vorhanden`);
+  if (skipped.length > 0) parts.push(`${skipped.length} Zeilen übersprungen (z. B. Zeile ${skipped[0].line}: ${skipped[0].reason})`);
+  return { ok: true, message: `${parts.join(", ")}.` };
+}
+
+/**
+ * Imports several lists at once: "## Name" lines start a list (created if missing, reused otherwise).
+ * Running it twice never duplicates words, so a failed import can simply be repeated.
+ */
+export async function importUnits(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const parsedForm = z.object({ moduleId: uuid, text: z.string().max(400_000, "Text ist zu lang") }).safeParse(Object.fromEntries(formData));
+  if (!parsedForm.success) return { ok: false, message: firstIssue(parsedForm.error) };
+
+  const { sections, skipped } = parseSections(parsedForm.data.text);
+  const total = sections.reduce((n, section) => n + section.rows.length, 0);
+  if (total === 0) {
+    return {
+      ok: false,
+      message: skipped.length > 0 ? `Nichts erkannt. Zeile ${skipped[0].line}: ${skipped[0].reason}.` : "Nichts zum Importieren gefunden. Jede Liste beginnt mit einer Zeile „## Name“.",
+    };
+  }
+  if (total > IMPORT_MAX_ROWS) return { ok: false, message: `Maximal ${IMPORT_MAX_ROWS} Wörter pro Import.` };
+
+  const supabase = await createClient();
+  const moduleId = parsedForm.data.moduleId;
+  const { data: module } = await supabase.from("modules").select("id").eq("id", moduleId).maybeSingle();
+  if (!module) return { ok: false, message: "Modul nicht gefunden" };
+
+  const { data: decks, error: decksError } = await supabase.from("decks").select("id, name").eq("module_id", moduleId);
+  if (decksError) return { ok: false, message: describeDbError(decksError) };
+  const deckByName = new Map((decks ?? []).map((d) => [String(d.name).toLowerCase(), d.id as string]));
+
+  let created = 0;
+  let added = 0;
+  let existing = 0;
+  for (const section of sections) {
+    let deckId = deckByName.get(section.title.toLowerCase());
+    if (!deckId) {
+      const { data: inserted, error } = await supabase
+        .from("decks")
+        .insert({ user_id: user.id, module_id: moduleId, name: section.title })
+        .select("id")
+        .single();
+      if (error || !inserted) {
+        revalidatePath(`/m/${moduleId}`, "layout");
+        return { ok: false, message: `Liste „${section.title}“: ${describeDbError(error ?? { message: "konnte nicht angelegt werden" })}. Bisher ${added} Wörter importiert, der Import kann gefahrlos wiederholt werden.` };
+      }
+      deckId = inserted.id as string;
+      deckByName.set(section.title.toLowerCase(), deckId);
+      created++;
+    }
+    const result = await insertNewCards(supabase, user.id, { id: deckId, module_id: moduleId }, section.rows);
+    added += result.added;
+    existing += result.existing;
+    if (result.error) {
+      revalidatePath(`/m/${moduleId}`, "layout");
+      return { ok: false, message: `Liste „${section.title}“: ${result.error}. Bisher ${added} Wörter importiert, der Import kann gefahrlos wiederholt werden.` };
+    }
   }
 
-  revalidatePath(`/m/${deck.module_id}`, "layout");
-  const parts = [`${fresh.length} importiert`];
-  if (rows.length - fresh.length > 0) parts.push(`${rows.length - fresh.length} schon vorhanden`);
+  revalidatePath(`/m/${moduleId}`, "layout");
+  const parts = [`${sections.length} Listen (${created} neu angelegt)`, `${added} Wörter importiert`];
+  if (existing > 0) parts.push(`${existing} schon vorhanden`);
   if (skipped.length > 0) parts.push(`${skipped.length} Zeilen übersprungen (z. B. Zeile ${skipped[0].line}: ${skipped[0].reason})`);
   return { ok: true, message: `${parts.join(", ")}.` };
 }

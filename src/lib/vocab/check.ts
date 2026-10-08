@@ -43,7 +43,10 @@ function distance(a: string, b: string): number {
 export function checkAnswer(answer: string, expected: string): Verdict {
   const given = normalize(answer);
   if (!given) return "wrong";
-  const accepted = [...new Set([...meanings(expected), expected].map(normalize).filter(Boolean))];
+  // "contingency (plan)": the bracketed part is optional, but typing it is fine too
+  const withBrackets = (text: string) => text.replace(/[()]/g, " ");
+  const forms = [...meanings(expected), expected].flatMap((m) => [m, withBrackets(m)]);
+  const accepted = [...new Set(forms.map(normalize).filter(Boolean))];
   if (accepted.includes(given)) return "correct";
   // one typo is forgiven in words of 5+ letters; shorter words must be exact
   if (accepted.some((a) => a.length >= 5 && distance(given, a) === 1)) return "typo";

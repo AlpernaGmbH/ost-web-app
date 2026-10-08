@@ -44,3 +44,14 @@ describe("checkAnswer", () => {
     expect(checkAnswer("springen", "rennen; laufen")).toBe("wrong");
   });
 });
+
+describe("terms with bracketed parts", () => {
+  it("accepts the term with or without the brackets", () => {
+    expect(checkAnswer("contingency", "contingency (plan)")).toBe("correct");
+    expect(checkAnswer("contingency plan", "contingency (plan)")).toBe("correct");
+    expect(checkAnswer("accomplish", "(to) accomplish")).toBe("correct");
+    expect(checkAnswer("to accomplish", "(to) accomplish")).toBe("correct");
+    expect(checkAnswer("calculated risk", "a calculated risk")).toBe("correct");
+    expect(checkAnswer("contingency planning", "contingency (plan)")).toBe("wrong");
+  });
+});

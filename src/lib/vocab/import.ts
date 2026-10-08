@@ -1,11 +1,12 @@
 // Parses a pasted word list (from Quizlet, Excel, a chat export, ...) into cards.
-// One word per line. Accepted separators, in this order: tab, " - " / " – " / " — ", ";", "=", " : ".
-// An optional third column is an example sentence. Lines starting with "#" are comments.
+// One word per line. Accepted separators, in this order: tab, " | ", " - " / " – " / " — ", ";", "=", " : ".
+// An optional third column is an example sentence. Lines starting with "#" are comments, except
+// "## Name" lines: parseSections() treats them as the start of a new list (e.g. one per unit).
 
 export type ImportRow = { front: string; back: string; example: string | null };
 export type ImportResult = { rows: ImportRow[]; skipped: { line: number; text: string; reason: string }[] };
 
-const SEPARATORS: RegExp[] = [/\t+/, /\s[-–—]\s/, /\s*;\s*/, /\s*=\s*/, /\s:\s/];
+const SEPARATORS: RegExp[] = [/\t+/, /\s\|\s/, /\s[-–—]\s/, /\s*;\s*/, /\s*=\s*/, /\s:\s/];
 export const MAX_FIELD = 500;
 
 function splitLine(line: string): string[] | null {
@@ -44,4 +45,67 @@ export function parseImport(text: string): ImportResult {
   });
 
   return { rows, skipped };
+}
+
+export type ImportSection = { title: string; rows: ImportRow[] };
+export type SectionsResult = { sections: ImportSection[]; skipped: ImportResult["skipped"] };
+export const MAX_TITLE = 80;
+
+const HEADING = /^##\s+(.+?)\s*$/;
+
+/** Like parseImport, but "## Title" lines start a new list. Rows before the first heading are rejected. */
+export function parseSections(text: string): SectionsResult {
+  const sections: ImportSection[] = [];
+  const skipped: SectionsResult["skipped"] = [];
+  const byTitle = new Map<string, ImportSection>();
+  const seen = new Map<ImportSection, Set<string>>();
+  let current: ImportSection | null = null;
+
+  text.split(/\r?\n/).forEach((raw, index) => {
+    const line = raw.trim();
+    if (!line) return;
+    const heading = HEADING.exec(line);
+    if (heading) {
+      const title = heading[1];
+      if (title.length > MAX_TITLE) {
+        skipped.push({ line: index + 1, text: title.slice(0, 60), reason: "Name der Liste zu lang" });
+        current = null;
+        return;
+      }
+      const key = title.toLowerCase();
+      current = byTitle.get(key) ?? { title, rows: [] };
+      if (!byTitle.has(key)) {
+        byTitle.set(key, current);
+        sections.push(current);
+        seen.set(current, new Set());
+      }
+      return;
+    }
+    if (line.startsWith("#")) return;
+
+    const parts = splitLine(line);
+    if (!parts) {
+      skipped.push({ line: index + 1, text: line, reason: "kein Trennzeichen gefunden" });
+      return;
+    }
+    if (!current) {
+      skipped.push({ line: index + 1, text: line.slice(0, 60), reason: "steht vor der ersten Überschrift (## Name)" });
+      return;
+    }
+    const [front, back, example] = parts;
+    if (front.length > MAX_FIELD || back.length > MAX_FIELD) {
+      skipped.push({ line: index + 1, text: line.slice(0, 60), reason: "Eintrag zu lang" });
+      return;
+    }
+    const known = seen.get(current)!;
+    const key = front.toLowerCase();
+    if (known.has(key)) {
+      skipped.push({ line: index + 1, text: line, reason: "doppelt in der Liste" });
+      return;
+    }
+    known.add(key);
+    current.rows.push({ front, back, example: example ? example.slice(0, MAX_FIELD) : null });
+  });
+
+  return { sections: sections.filter((section) => section.rows.length > 0), skipped };
 }

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createLecture } from "@/app/actions/lectures";
-import { addCard, createDeck, importCards, updateCard } from "@/app/actions/vocab";
+import { addCard, createDeck, importCards, importUnits, updateCard } from "@/app/actions/vocab";
 import { bootstrapSemester, saveModule, saveSemester, syncNow } from "@/app/actions/semester";
 import type { FormState } from "@/lib/form-state";
 import { Button, FormMessage, inputClass } from "./ui";
@@ -166,11 +166,11 @@ export function AddCardForm({ deckId }: { deckId: string }) {
       <input type="hidden" name="deckId" value={deckId} />
       <div className="grid grid-cols-2 gap-2">
         <label className="block text-sm">
-          English
+          Begriff
           <input name="front" required maxLength={500} autoCapitalize="none" className={`${inputClass} mt-1`} />
         </label>
         <label className="block text-sm">
-          Deutsch
+          Bedeutung
           <input name="back" required maxLength={500} className={`${inputClass} mt-1`} />
         </label>
       </div>
@@ -178,7 +178,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
         Beispielsatz (optional)
         <input name="example" maxLength={500} className={`${inputClass} mt-1`} />
       </label>
-      <p className="text-xs text-muted">Mehrere Bedeutungen mit „;“ trennen, z. B. „rennen; laufen“. Beim Schreiben zählt jede.</p>
+      <p className="text-xs text-muted">Die Bedeutung ist eine Übersetzung oder eine Definition. Mehrere Bedeutungen mit „;“ trennen, z. B. „rennen; laufen“.</p>
       <FormMessage state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? "Speichert …" : "Wort hinzufügen"}
@@ -198,13 +198,13 @@ export function ImportForm({ deckId }: { deckId: string }) {
           name="text"
           required
           rows={8}
-          placeholder={"to run - rennen\nachieve; erreichen\nhouse = Haus"}
+          placeholder={"to run - rennen\nachieve | to complete successfully | She achieved her goal.\nhouse = Haus"}
           className="mt-1 w-full rounded-lg border border-border bg-card p-3 font-mono text-[15px] focus:outline-2 focus:outline-primary"
         />
       </label>
       <p className="text-xs text-muted">
-        Ein Wort pro Zeile: <code>English - Deutsch</code>. Erlaubt sind Tab, „ - “, „;“, „=“ oder „ : “. Optional eine dritte Spalte mit einem
-        Beispielsatz. Bereits vorhandene Wörter werden übersprungen.
+        Ein Wort pro Zeile: <code>Begriff | Bedeutung | Beispielsatz</code> (Beispielsatz optional). Als Trennzeichen gehen Tab, „ | “, „ - “, „;“,
+        „=“ oder „ : “. Bereits vorhandene Wörter werden übersprungen.
       </p>
       <FormMessage state={state} />
       <Button type="submit" disabled={pending}>
@@ -224,8 +224,8 @@ export function EditCardForm({
     <form action={action} className="space-y-2 px-4 pb-3">
       <input type="hidden" name="cardId" value={card.id} />
       <div className="grid grid-cols-2 gap-2">
-        <input name="front" required maxLength={500} defaultValue={card.front_md} aria-label="English" className={inputClass} />
-        <input name="back" required maxLength={500} defaultValue={card.back_md} aria-label="Deutsch" className={inputClass} />
+        <input name="front" required maxLength={500} defaultValue={card.front_md} aria-label="Begriff" className={inputClass} />
+        <input name="back" required maxLength={500} defaultValue={card.back_md} aria-label="Bedeutung" className={inputClass} />
       </div>
       <input name="example" maxLength={500} defaultValue={card.example ?? ""} placeholder="Beispielsatz" aria-label="Beispielsatz" className={inputClass} />
       <div className="flex items-center gap-3">
@@ -234,6 +234,33 @@ export function EditCardForm({
         </Button>
         <FormMessage state={state} />
       </div>
+    </form>
+  );
+}
+
+export function ImportUnitsForm({ moduleId }: { moduleId: string }) {
+  const [state, action, pending] = useActionState(importUnits, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="moduleId" value={moduleId} />
+      <label className="block text-sm">
+        Mehrere Listen einfügen
+        <textarea
+          name="text"
+          required
+          rows={10}
+          placeholder={"## Unit 1 – Goal-setting\n(to) accomplish | to achieve or complete successfully | She accomplished it.\n\n## Unit 2 – Teamwork\n(to) collaborate | to work jointly with others"}
+          className="mt-1 w-full rounded-lg border border-border bg-card p-3 font-mono text-[15px] focus:outline-2 focus:outline-primary"
+        />
+      </label>
+      <p className="text-xs text-muted">
+        Jede Liste beginnt mit einer Zeile <code>## Name</code>, darunter ein Wort pro Zeile (<code>Begriff | Bedeutung | Beispielsatz</code>).
+        Listen mit gleichem Namen werden wiederverwendet, vorhandene Wörter übersprungen: Du kannst den Import gefahrlos wiederholen.
+      </p>
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Importiert …" : "Alle Listen importieren"}
+      </Button>
     </form>
   );
 }

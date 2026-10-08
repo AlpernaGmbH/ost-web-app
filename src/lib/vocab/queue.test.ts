@@ -80,3 +80,18 @@ describe("canUseChoice", () => {
     expect(canUseChoice([{ back_md: "a" }, { back_md: "b" }, { back_md: "c" }, { back_md: "d" }])).toBe(true);
   });
 });
+
+import { resolveDirection } from "./queue";
+
+describe("resolveDirection", () => {
+  it("auto: term first for flashcards, meaning first for writing and choosing", () => {
+    expect(resolveDirection("auto", "cards")).toBe("en-de");
+    expect(resolveDirection("auto", "write")).toBe("de-en");
+    expect(resolveDirection("auto", "choice")).toBe("de-en");
+  });
+
+  it("keeps an explicit choice", () => {
+    expect(resolveDirection("en-de", "write")).toBe("en-de");
+    expect(resolveDirection("mixed", "cards")).toBe("mixed");
+  });
+});

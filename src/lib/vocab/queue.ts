@@ -1,6 +1,7 @@
 import { isDue } from "./srs";
 
 export type Direction = "en-de" | "de-en" | "mixed";
+export type DirectionChoice = Direction | "auto";
 export type Mode = "cards" | "write" | "choice";
 export type Scope = "due" | "all";
 type Dir = "en-de" | "de-en";
@@ -82,4 +83,13 @@ export function buildEntries(
 /** Choice mode needs real alternatives: at least 4 distinct meanings in the deck. */
 export function canUseChoice(pool: Pick<CardRow, "back_md">[]): boolean {
   return new Set(pool.map((p) => p.back_md.toLowerCase())).size >= 4;
+}
+
+/**
+ * "auto" picks what makes sense per mode: flashcards show the term first, while writing or choosing
+ * means giving the term for a meaning (typing a whole definition is not a realistic exercise).
+ */
+export function resolveDirection(choice: DirectionChoice, mode: Mode): Direction {
+  if (choice !== "auto") return choice;
+  return mode === "cards" ? "en-de" : "de-en";
 }

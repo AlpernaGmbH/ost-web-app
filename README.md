@@ -22,6 +22,13 @@ Stand: **Phase 1** (Grundgerüst). Karteikarten/MC (Phase 2) und Übungen/Dashbo
    Nicht zugeordnete Termine landen in der Inbox; Stichwörter pro Modul sind in den Einstellungen editierbar.
 6. Auf dem Handy: Seite öffnen → „Zum Home-Bildschirm" (iOS) bzw. „App installieren" (Android).
 
+## Vokabeltrainer (Modul „Englisch“)
+
+Tab **Vokabeln**: Listen anlegen, Wörter einzeln oder per Import einfügen, dann üben (Karten, Schreiben, Auswahl) mit Wiederholungsplan.
+Der Import kennt mehrere Listen auf einmal: eine Zeile `## Unit 1 – Titel` startet eine Liste, darunter ein Wort pro Zeile
+`Begriff | Bedeutung | Beispielsatz` (Beispielsatz optional; Trennzeichen Tab, ` | `, ` - `, `;`, `=`). Der Import ist wiederholbar, ohne Duplikate.
+Setzt `supabase/migrations/002_vocab.sql` voraus.
+
 ## Entwickeln
 
 ```bash

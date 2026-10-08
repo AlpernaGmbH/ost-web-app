@@ -45,3 +45,6 @@ next-env.d.ts
 !.env.example
 /test-results/
 /playwright-report/
+
+# personal study data (word lists to import), never committed
+/import/

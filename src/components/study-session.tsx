@@ -11,7 +11,7 @@ function speak(text: string) {
   try {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(text.replace(/[()]/g, " ").replace(/\s+/g, " ").trim());
     utterance.lang = "en-GB";
     window.speechSynthesis.speak(utterance);
   } catch {
@@ -130,7 +130,7 @@ export function StudySession({
   if (!entry) return null;
 
   const progress = Math.round((state.pos / state.queue.length) * 100);
-  const targetLang = entry.dir === "en-de" ? "Deutsch" : "English";
+  const targetLabel = entry.dir === "en-de" ? "Bedeutung" : "Begriff";
 
   return (
     <div className="space-y-5">
@@ -148,7 +148,7 @@ export function StudySession({
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 text-center">
-        <p className="mb-1 text-xs uppercase tracking-wide text-muted">{entry.dir === "en-de" ? "English" : "Deutsch"}</p>
+        <p className="mb-1 text-xs uppercase tracking-wide text-muted">{entry.dir === "en-de" ? "Begriff" : "Bedeutung"}</p>
         <p className="text-3xl font-semibold" data-testid="prompt">
           {entry.prompt}
         </p>
@@ -159,7 +159,7 @@ export function StudySession({
         ) : null}
         {mode === "cards" && state.revealed ? (
           <div className="mt-5 border-t border-border pt-5">
-            <p className="mb-1 text-xs uppercase tracking-wide text-muted">{targetLang}</p>
+            <p className="mb-1 text-xs uppercase tracking-wide text-muted">{targetLabel}</p>
             <p className="text-2xl" data-testid="answer">
               {entry.answer}
             </p>
@@ -200,8 +200,8 @@ export function StudySession({
             <input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              aria-label={`Übersetzung auf ${targetLang}`}
-              placeholder={`Auf ${targetLang} …`}
+              aria-label={`Antwort: ${targetLabel}`}
+              placeholder={`${targetLabel} eintippen …`}
               autoFocus
               autoCapitalize="none"
               autoCorrect="off"
