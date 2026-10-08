@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 // Logged-in flows need a real Supabase project and are covered by the manual checklist in the README.
 
 test.describe("access control", () => {
-  for (const path of ["/", "/settings", "/stundenplan", "/m/00000000-0000-0000-0000-000000000000", "/d/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000/study?mode=write"]) {
+  for (const path of ["/", "/settings", "/stundenplan", "/stundenplan?view=week&w=2026-10-05", "/stundenplan?view=month&m=2026-10&d=2026-10-08", "/m/00000000-0000-0000-0000-000000000000", "/d/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000/study?mode=write"]) {
     test(`${path} redirects logged-out visitors to /login`, async ({ page }) => {
       await page.goto(path);
       await expect(page).toHaveURL(/\/login$/);

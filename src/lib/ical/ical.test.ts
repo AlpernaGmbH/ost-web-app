@@ -252,3 +252,34 @@ describe("planSync with an administration module", () => {
     expect(second.upserts).toEqual([]);
   });
 });
+
+describe("re-matching events that sit in the administration fallback", () => {
+  const semester = { id: "sem", user_id: "user" };
+  const now = new Date("2026-10-06T12:00:00Z");
+  const { events } = parseFeed(FEED, RANGE);
+  const stored = (plan: ReturnType<typeof planSync>, override: Record<string, string> = {}) =>
+    plan.upserts.map((u, i) => ({ id: `id-${i}`, ical_uid: u.ical_uid, module_id: override[u.ical_uid] ?? u.module_id, title: u.title, starts_at: u.starts_at, ends_at: u.ends_at, location: u.location, status: u.status }));
+
+  it("moves events out of administration once a keyword matches", () => {
+    const first = planSync({ events, existing: [], modules: [{ id: "wms", ical_match: "nothing-matches" }], fallbackModuleId: "adm", semester, now });
+    expect(first.upserts.every((u) => u.module_id === "adm")).toBe(true);
+    const second = planSync({ events, existing: stored(first), modules: [{ id: "wms", ical_match: "wirtschaftsmathematik" }], fallbackModuleId: "adm", semester, now });
+    expect(second.upserts).toHaveLength(1);
+    expect(second.upserts[0]).toMatchObject({ ical_uid: "single-1@test", module_id: "wms" });
+    expect(second.stats.administration).toBe(0);
+  });
+
+  it("keeps events in administration when nothing matches and does not recount them", () => {
+    const first = planSync({ events, existing: [], modules: [], fallbackModuleId: "adm", semester, now });
+    const second = planSync({ events, existing: stored(first), modules: [], fallbackModuleId: "adm", semester, now });
+    expect(second.upserts).toEqual([]);
+    expect(second.stats).toMatchObject({ administration: 0, unchanged: 5 });
+  });
+
+  it("does not let an ambiguous keyword pull an administration event into the inbox", () => {
+    const first = planSync({ events, existing: [], modules: [], fallbackModuleId: "adm", semester, now });
+    const ambiguous = [{ id: "a", ical_match: "systemisch" }, { id: "b", ical_match: "management" }];
+    const second = planSync({ events, existing: stored(first), modules: ambiguous, fallbackModuleId: "adm", semester, now });
+    expect(second.upserts.every((u) => u.module_id !== null)).toBe(true);
+  });
+});

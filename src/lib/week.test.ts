@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatWeek, shortDate, weekNumber, weekRange, zurichDate, zurichInstant } from "./week";
+import { formatWeek, shortDate, weekNumber, weekRange, zurichDate, zurichInstant, zurichMinutes } from "./week";
 
 const START = "2026-09-14"; // W01 starts Monday 14.09.2026
 
@@ -97,5 +97,13 @@ describe("addDays / mondayOf", () => {
     expect(mondayOf("2026-10-08")).toBe("2026-10-05"); // Thursday
     expect(mondayOf("2026-10-11")).toBe("2026-10-05"); // Sunday belongs to the week before the next Monday
     expect(mondayOf("2027-01-01")).toBe("2026-12-28"); // across the year boundary
+  });
+});
+
+describe("zurichMinutes", () => {
+  it("returns the Zurich wall clock in minutes, in summer and winter time", () => {
+    expect(zurichMinutes(new Date("2026-10-07T16:15:00Z"))).toBe(18 * 60 + 15); // CEST
+    expect(zurichMinutes(new Date("2026-11-04T17:15:00Z"))).toBe(18 * 60 + 15); // CET
+    expect(zurichMinutes(new Date("2026-10-06T22:00:00Z"))).toBe(0); // midnight in Zurich
   });
 });

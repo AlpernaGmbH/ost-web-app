@@ -71,6 +71,13 @@ export function zurichInstant(date: string, time: string): Date {
   return new Date(wall - zurichOffsetMs(new Date(first)));
 }
 
+/** Minutes since local midnight (Europe/Zurich) of the given instant, e.g. 18:15 -> 1095. */
+export function zurichMinutes(at: Date): number {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hourCycle: "h23", hour: "2-digit", minute: "2-digit" }).formatToParts(at);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return get("hour") * 60 + get("minute");
+}
+
 /** "YYYY-MM-DD" plus `days` calendar days (pure date math, no time zone involved). */
 export function addDays(isoDate: string, days: number): string {
   return new Date((dayNumber(isoDate) + days) * DAY_MS).toISOString().slice(0, 10);

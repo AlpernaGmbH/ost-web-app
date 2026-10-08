@@ -21,13 +21,14 @@ export function weekBounds(monday: string): { from: Date; to: Date } {
   return { from: zurichInstant(monday, "00:00"), to: zurichInstant(addDays(monday, 7), "00:00") };
 }
 
-/** Seven days Monday..Sunday with that week's events sorted by start time. Days follow Zurich local dates. */
-export function groupWeek(monday: string, lectures: AgendaLecture[], now: Date): AgendaDay[] {
-  const today = zurichDate(now);
+const eventEnd = (lecture: AgendaLecture) => (lecture.ends_at ? Date.parse(lecture.ends_at) : Date.parse(lecture.starts_at) + FALLBACK_DURATION_MS);
+
+/** Events keyed by their Zurich local date, each day sorted by start time. */
+export function groupByDate(lectures: AgendaLecture[], now: Date): Map<string, AgendaItem[]> {
   const byDate = new Map<string, AgendaItem[]>();
   for (const lecture of [...lectures].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at))) {
     const start = Date.parse(lecture.starts_at);
-    const end = lecture.ends_at ? Date.parse(lecture.ends_at) : start + FALLBACK_DURATION_MS;
+    const end = eventEnd(lecture);
     const item: AgendaItem = {
       ...lecture,
       ongoing: lecture.status === "scheduled" && start <= now.getTime() && now.getTime() < end,
@@ -36,6 +37,13 @@ export function groupWeek(monday: string, lectures: AgendaLecture[], now: Date):
     const date = zurichDate(new Date(lecture.starts_at));
     byDate.set(date, [...(byDate.get(date) ?? []), item]);
   }
+  return byDate;
+}
+
+/** Seven days Monday..Sunday with that week's events sorted by start time. Days follow Zurich local dates. */
+export function groupWeek(monday: string, lectures: AgendaLecture[], now: Date): AgendaDay[] {
+  const today = zurichDate(now);
+  const byDate = groupByDate(lectures, now);
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(monday, i);
     return {

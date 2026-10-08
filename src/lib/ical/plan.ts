@@ -62,11 +62,15 @@ export function planSync(input: {
   for (const event of events) {
     const current = existingByUid.get(event.key);
     // keep a module the user (or an earlier sync) already assigned; only unassigned events get re-matched
-    let moduleId = current?.module_id ?? null;
-    if (moduleId === null) {
+    const before = current?.module_id ?? null;
+    let moduleId = before;
+    // Events in the inbox or in the administration fallback were never placed by the user, so they are
+    // re-matched on every sync: fixing the keywords of a module moves them without manual work.
+    if (before === null || (fallbackModuleId !== null && before === fallbackModuleId)) {
       const match = matchModuleDetailed(event.title, modules);
-      moduleId = match.id ?? (match.ambiguous ? null : fallbackModuleId);
-      if (match.id === null && moduleId !== null) stats.administration++;
+      if (match.id) moduleId = match.id;
+      else if (before === null) moduleId = match.ambiguous ? null : fallbackModuleId;
+      if (moduleId === fallbackModuleId && before !== fallbackModuleId) stats.administration++;
     }
     const status = event.cancelled ? "cancelled" : "scheduled";
     if (moduleId === null) stats.unmatched++;

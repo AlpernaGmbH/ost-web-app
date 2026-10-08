@@ -15,10 +15,10 @@ const isMonday = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
 
 // Defaults are a first guess at the OST titles; they are editable in the settings.
 const DEFAULT_MODULES = [
-  { code: "WMS", name: "Wirtschaftsmathematik & Statistik", kind: "course", color: "#4f46e5", ical_match: "wirtschaftsmathematik, statistik" },
+  { code: "WMS", name: "Wirtschaftsmathematik & Statistik", kind: "course", color: "#4f46e5", ical_match: "msta, wirtschaftsmathematik, statistik" },
   { code: "SYS", name: "Systemisches Management", kind: "course", color: "#0d9488", ical_match: "systemisch" },
   { code: "VHR", name: "Vertrags- und Haftpflichtrecht", kind: "course", color: "#d97706", ical_match: "vertrags, haftpflicht" },
-  { code: "ENG", name: "Englisch", kind: "language", color: "#db2777", ical_match: "englisch, english" },
+  { code: "ENG", name: "Englisch", kind: "language", color: "#db2777", ical_match: "epc1, englisch, english" },
   // receives every timetable event that matches no subject; it never matches by keyword
   { code: "ADM", name: "Administration", kind: "admin", color: "#64748b", ical_match: null },
 ] as const;

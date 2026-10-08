@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { AgendaDay, AgendaItem } from "@/lib/agenda";
 import { formatTime } from "@/lib/format";
 
-export type AgendaModule = { code: string; color: string };
+/** `admin` marks the Administration module: its events are shown by title, since "ADM" says nothing. */
+export type AgendaModule = { code: string; color: string; admin?: boolean };
 
 function Entry({ item, module }: { item: AgendaItem; module: AgendaModule | undefined }) {
   const cancelled = item.status === "cancelled";
@@ -43,9 +44,9 @@ function Entry({ item, module }: { item: AgendaItem; module: AgendaModule | unde
   );
 }
 
-/** Week agenda: days with events (and today, even when empty). */
-export function AgendaView({ days, modules }: { days: AgendaDay[]; modules: Map<string, AgendaModule> }) {
-  const visible = days.filter((d) => d.items.length > 0 || d.isToday);
+/** Agenda list: days with events (and today, even when empty); `showEmptyDays` keeps every given day, e.g. a picked day of the month view. */
+export function AgendaView({ days, modules, showEmptyDays = false }: { days: AgendaDay[]; modules: Map<string, AgendaModule>; showEmptyDays?: boolean }) {
+  const visible = showEmptyDays ? days : days.filter((d) => d.items.length > 0 || d.isToday);
   if (visible.length === 0) {
     return <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted">In dieser Woche stehen keine Termine im Stundenplan.</p>;
   }
