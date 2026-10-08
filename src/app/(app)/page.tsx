@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { AgendaView } from "@/components/agenda";
 import { BootstrapForm } from "@/components/forms";
 import { Card, PageTitle } from "@/components/ui";
+import { groupWeek, type AgendaLecture } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import type { Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDateTime } from "@/lib/format";
 import { isDue } from "@/lib/vocab/srs";
 import { createClient } from "@/lib/supabase/server";
-import { weekNumber } from "@/lib/week";
+import { addDays, mondayOf, weekNumber, zurichDate, zurichInstant } from "@/lib/week";
 
 export default async function HomePage() {
   await requireUser();
@@ -47,7 +49,8 @@ export default async function HomePage() {
     );
   }
 
-  const [modulesRes, upcomingRes, inboxRes] = await Promise.all([
+  const today = zurichDate(now);
+  const [modulesRes, upcomingRes, inboxRes, todayRes, nextRes] = await Promise.all([
     supabase
       .from("modules")
       .select("id, code, name, ects, kind, color")
@@ -70,6 +73,23 @@ export default async function HomePage() {
       .eq("semester_id", semester.id)
       .is("module_id", null)
       .eq("status", "scheduled"),
+    supabase
+      .from("lectures")
+      .select("id, module_id, title, starts_at, ends_at, location, status")
+      .eq("semester_id", semester.id)
+      .gte("starts_at", zurichInstant(today, "00:00").toISOString())
+      .lt("starts_at", zurichInstant(addDays(today, 1), "00:00").toISOString())
+      .order("starts_at")
+      .returns<AgendaLecture[]>(),
+    supabase
+      .from("lectures")
+      .select("id, title, starts_at")
+      .eq("semester_id", semester.id)
+      .eq("status", "scheduled")
+      .gte("starts_at", now.toISOString())
+      .order("starts_at")
+      .limit(1)
+      .returns<{ id: string; title: string; starts_at: string }[]>(),
   ]);
 
   const modules = modulesRes.data ?? [];
@@ -96,6 +116,10 @@ export default async function HomePage() {
       vocabStats.set(c.module_id, entry);
     }
   }
+  const todayDay = groupWeek(mondayOf(today), todayRes.data ?? [], now).filter((d) => d.isToday);
+  const agendaModules = new Map(modules.map((m) => [m.id, { code: m.code, color: m.color }]));
+  const nextEvent = nextRes.data?.[0];
+  const hasLeftToday = (todayRes.data ?? []).some((l) => l.status === "scheduled" && Date.parse(l.ends_at ?? l.starts_at) > now.getTime());
   const week = weekNumber(semester.start_date, now);
   const inboxCount = inboxRes.count ?? 0;
 
@@ -105,6 +129,23 @@ export default async function HomePage() {
         title="Module"
         subtitle={week >= 1 ? `${semester.name} · Woche ${String(week).padStart(2, "0")}` : `${semester.name} · beginnt am ${semester.start_date}`}
       />
+
+      <section aria-labelledby="today-h" className="mb-5 space-y-2">
+        <div className="flex items-baseline justify-between">
+          <h2 id="today-h" className="font-semibold">
+            Heute
+          </h2>
+          <Link href="/stundenplan" className="text-sm text-primary">
+            Stundenplan →
+          </Link>
+        </div>
+        <AgendaView days={todayDay} modules={agendaModules} />
+        {!hasLeftToday && nextEvent ? (
+          <p className="text-sm text-muted">
+            Nächster Termin: {formatDateTime(nextEvent.starts_at)} · {nextEvent.title}
+          </p>
+        ) : null}
+      </section>
 
       {inboxCount > 0 ? (
         <Link href="/settings#inbox" className="mb-4 block rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
@@ -135,8 +176,10 @@ export default async function HomePage() {
                     {vocab && vocab.total > 0
                       ? `${vocab.due} von ${vocab.total} Wörtern zu üben`
                       : next
-                        ? `Nächste Vorlesung: ${formatDateTime(next.starts_at)}`
-                        : "Keine kommende Vorlesung"}
+                        ? `${m.kind === "admin" ? "Nächster Termin" : "Nächste Vorlesung"}: ${formatDateTime(next.starts_at)}`
+                        : m.kind === "admin"
+                          ? "Kein kommender Termin"
+                          : "Keine kommende Vorlesung"}
                   </span>
                 </span>
               </Link>

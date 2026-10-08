@@ -45,7 +45,7 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
   const isLanguage = module.kind === "language";
   const tabs = [
     ...(isLanguage ? [{ id: "vokabeln", label: "Vokabeln", href: `/m/${module.id}` }] : []),
-    { id: "vorlesungen", label: "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
+    { id: "vorlesungen", label: module.kind === "admin" ? "Termine" : "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
     { id: "dokumente", label: "Dokumente", href: `/m/${module.id}?tab=dokumente` },
   ];
   const defaultTab = isLanguage ? "vokabeln" : "vorlesungen";

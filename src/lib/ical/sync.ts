@@ -39,7 +39,7 @@ export async function syncSemester(
   const { events, skippedFullDay } = parseFeed(await fetchFeed(url), { from, to });
 
   const [modulesRes, existingRes] = await Promise.all([
-    db.from("modules").select("id, ical_match").eq("semester_id", semester.id),
+    db.from("modules").select("id, ical_match, kind").eq("semester_id", semester.id),
     db
       .from("lectures")
       .select("id, ical_uid, module_id, title, starts_at, ends_at, location, status")
@@ -49,10 +49,15 @@ export async function syncSemester(
   if (modulesRes.error) throw new Error(`Module laden: ${modulesRes.error.message}`);
   if (existingRes.error) throw new Error(`Vorlesungen laden: ${existingRes.error.message}`);
 
+  // the administration module collects everything that matches no subject and never matches by keyword
+  const allModules = (modulesRes.data ?? []) as { id: string; ical_match: string | null; kind: string }[];
+  const fallbackModuleId = allModules.find((m) => m.kind === "admin")?.id ?? null;
+
   const plan = planSync({
     events,
     existing: (existingRes.data ?? []) as ExistingLecture[],
-    modules: modulesRes.data ?? [],
+    modules: allModules.filter((m) => m.kind !== "admin"),
+    fallbackModuleId,
     semester,
     now,
   });

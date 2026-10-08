@@ -29,3 +29,4 @@ for f in "$ROOT"/supabase/migrations/*.sql; do
   "${PSQL[@]}" -f "$f"
 done
 "${PSQL[@]}" -f "$ROOT/supabase/tests/rls.sql"
+(cd "$ROOT" && "${PSQL[@]}" -f supabase/tests/migration003.sql)

@@ -1,4 +1,4 @@
-import { matchModule, type MatchableModule } from "./match";
+import { matchModuleDetailed, type MatchableModule } from "./match";
 import type { ParsedEvent } from "./parse";
 
 export type ExistingLecture = {
@@ -30,7 +30,10 @@ export type SyncStats = {
   updated: number;
   unchanged: number;
   cancelled: number;
+  /** events that ended up without any module (ambiguous match or no administration module) */
   unmatched: number;
+  /** events without a keyword match that were filed under the administration module */
+  administration: number;
 };
 
 const sameTime = (iso: string | null, date: Date | null) =>
@@ -43,19 +46,28 @@ const sameTime = (iso: string | null, date: Date | null) =>
 export function planSync(input: {
   events: ParsedEvent[];
   existing: ExistingLecture[];
+  /** modules that take part in keyword matching (not the administration module) */
   modules: MatchableModule[];
+  /** receives every event that matches no module; ambiguous matches stay in the inbox instead */
+  fallbackModuleId?: string | null;
   semester: { id: string; user_id: string };
   now: Date;
 }): { upserts: LectureUpsert[]; cancelIds: string[]; stats: SyncStats } {
   const { events, existing, modules, semester, now } = input;
+  const fallbackModuleId = input.fallbackModuleId ?? null;
   const existingByUid = new Map(existing.map((l) => [l.ical_uid, l]));
-  const stats: SyncStats = { created: 0, updated: 0, unchanged: 0, cancelled: 0, unmatched: 0 };
+  const stats: SyncStats = { created: 0, updated: 0, unchanged: 0, cancelled: 0, unmatched: 0, administration: 0 };
   const upserts: LectureUpsert[] = [];
 
   for (const event of events) {
     const current = existingByUid.get(event.key);
     // keep a module the user (or an earlier sync) already assigned; only unassigned events get re-matched
-    const moduleId = current?.module_id ?? matchModule(event.title, modules);
+    let moduleId = current?.module_id ?? null;
+    if (moduleId === null) {
+      const match = matchModuleDetailed(event.title, modules);
+      moduleId = match.id ?? (match.ambiguous ? null : fallbackModuleId);
+      if (match.id === null && moduleId !== null) stats.administration++;
+    }
     const status = event.cancelled ? "cancelled" : "scheduled";
     if (moduleId === null) stats.unmatched++;
 

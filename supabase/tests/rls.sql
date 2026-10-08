@@ -66,6 +66,25 @@ begin
 end;
 $$;
 
+-- migration 003: administration module kind is accepted, other kinds still are not
+do $$
+begin
+  insert into public.modules (semester_id, code, name, kind, ects)
+  values ('11111111-0000-0000-0000-000000000001', 'ADM', 'Administration', 'admin', 0);
+  begin
+    insert into public.modules (semester_id, code, name, kind) values ('11111111-0000-0000-0000-000000000001', 'BAD', 'Bad', 'unknown');
+    raise exception 'expected unknown module kind to fail';
+  exception when check_violation then null;
+  end;
+  -- only one module per code and semester
+  begin
+    insert into public.modules (semester_id, code, name, kind) values ('11111111-0000-0000-0000-000000000001', 'ADM', 'Zweite', 'admin');
+    raise exception 'expected duplicate code to fail';
+  exception when unique_violation then null;
+  end;
+end;
+$$;
+
 -- W01 must start on a Monday
 do $$
 begin

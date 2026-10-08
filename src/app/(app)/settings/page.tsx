@@ -36,10 +36,10 @@ export default async function SettingsPage() {
   const [modulesRes, inboxRes] = await Promise.all([
     supabase
       .from("modules")
-      .select("id, code, name, ects, ical_match")
+      .select("id, code, name, ects, ical_match, kind")
       .eq("semester_id", semester.id)
       .order("sort_order")
-      .returns<Pick<Module, "id" | "code" | "name" | "ects" | "ical_match">[]>(),
+      .returns<Pick<Module, "id" | "code" | "name" | "ects" | "ical_match" | "kind">[]>(),
     supabase
       .from("lectures")
       .select("id, title, starts_at")
@@ -78,7 +78,7 @@ export default async function SettingsPage() {
       </section>
 
       <section id="inbox" aria-labelledby="inbox-h" className="space-y-3">
-        <h2 id="inbox-h" className="font-semibold">Inbox: Termine ohne Modul ({inbox.length})</h2>
+        <h2 id="inbox-h" className="font-semibold">Inbox: nicht eindeutig zugeordnete Termine ({inbox.length})</h2>
         {inbox.length === 0 ? (
           <Card>
             <p className="text-sm text-muted">Alle importierten Termine sind einem Modul zugeordnet.</p>
@@ -122,7 +122,7 @@ export default async function SettingsPage() {
       <section aria-labelledby="mods" className="space-y-3">
         <h2 id="mods" className="font-semibold">Module</h2>
         <div className="space-y-3">
-          {modules.map((m) => (
+          {modules.filter((m) => m.kind !== "admin").map((m) => (
             <Card key={m.id}>
               <ModuleForm module={m} />
             </Card>

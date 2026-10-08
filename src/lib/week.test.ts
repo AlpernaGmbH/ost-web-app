@@ -77,3 +77,25 @@ describe("zurichInstant", () => {
     expect(zurichDate(zurichInstant("2026-09-21", "00:30"))).toBe("2026-09-21");
   });
 });
+
+import { addDays, mondayOf } from "./week";
+
+describe("addDays / mondayOf", () => {
+  it("adds calendar days across months, years and leap days", () => {
+    expect(addDays("2026-10-05", 7)).toBe("2026-10-12");
+    expect(addDays("2026-12-28", 7)).toBe("2027-01-04");
+    expect(addDays("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addDays("2026-10-05", -7)).toBe("2026-09-28");
+  });
+
+  it("is not affected by the DST change", () => {
+    expect(addDays("2026-10-24", 2)).toBe("2026-10-26");
+  });
+
+  it("finds the Monday of any weekday, including Sunday", () => {
+    expect(mondayOf("2026-10-05")).toBe("2026-10-05"); // Monday
+    expect(mondayOf("2026-10-08")).toBe("2026-10-05"); // Thursday
+    expect(mondayOf("2026-10-11")).toBe("2026-10-05"); // Sunday belongs to the week before the next Monday
+    expect(mondayOf("2027-01-01")).toBe("2026-12-28"); // across the year boundary
+  });
+});

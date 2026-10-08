@@ -19,6 +19,8 @@ const DEFAULT_MODULES = [
   { code: "SYS", name: "Systemisches Management", kind: "course", color: "#0d9488", ical_match: "systemisch" },
   { code: "VHR", name: "Vertrags- und Haftpflichtrecht", kind: "course", color: "#d97706", ical_match: "vertrags, haftpflicht" },
   { code: "ENG", name: "Englisch", kind: "language", color: "#db2777", ical_match: "englisch, english" },
+  // receives every timetable event that matches no subject; it never matches by keyword
+  { code: "ADM", name: "Administration", kind: "admin", color: "#64748b", ical_match: null },
 ] as const;
 
 /** First-run setup: HS26 (W01 = 14.09.2026) with the four modules. Does nothing if a semester exists. */
@@ -41,7 +43,7 @@ export async function bootstrapSemester(): Promise<FormState> {
   if (error || !semester) return { ok: false, message: describeDbError(error ?? { message: "Semester konnte nicht angelegt werden" }) };
 
   const { error: moduleError } = await supabase.from("modules").insert(
-    DEFAULT_MODULES.map((m, i) => ({ ...m, user_id: user.id, semester_id: semester.id, ects: m.kind === "language" ? 0 : 6, sort_order: i })),
+    DEFAULT_MODULES.map((m, i) => ({ ...m, user_id: user.id, semester_id: semester.id, ects: m.kind === "course" ? 6 : 0, sort_order: i })),
   );
   if (moduleError) {
     // do not leave a half-initialised semester behind: the next click would see it and skip the modules
@@ -122,7 +124,7 @@ export async function syncNow(_prev: FormState, formData: FormData): Promise<For
     revalidatePath("/", "layout");
     return {
       ok: true,
-      message: `${r.created} neu, ${r.updated} aktualisiert, ${r.unchanged} unverändert, ${r.cancelled} abgesagt, ${r.unmatched} ohne Modul${r.skippedFullDay ? `, ${r.skippedFullDay} ganztägige übersprungen` : ""}.`,
+      message: `${r.created} neu, ${r.updated} aktualisiert, ${r.unchanged} unverändert, ${r.cancelled} abgesagt, ${r.administration} in Administration, ${r.unmatched} ohne Modul${r.skippedFullDay ? `, ${r.skippedFullDay} ganztägige übersprungen` : ""}.`,
     };
   } catch (e) {
     return { ok: false, message: e instanceof Error ? e.message : "Sync fehlgeschlagen" };

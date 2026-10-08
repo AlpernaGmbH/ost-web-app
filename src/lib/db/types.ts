@@ -17,7 +17,7 @@ export type Module = {
   code: string;
   name: string;
   ects: number;
-  kind: "course" | "language";
+  kind: "course" | "language" | "admin";
   color: string;
   ical_match: string | null;
   sort_order: number;

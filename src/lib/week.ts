@@ -70,3 +70,14 @@ export function zurichInstant(date: string, time: string): Date {
   // the offset can differ at the DST boundary; re-evaluate once at the candidate instant
   return new Date(wall - zurichOffsetMs(new Date(first)));
 }
+
+/** "YYYY-MM-DD" plus `days` calendar days (pure date math, no time zone involved). */
+export function addDays(isoDate: string, days: number): string {
+  return new Date((dayNumber(isoDate) + days) * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** Monday ("YYYY-MM-DD") of the week that contains the given date. */
+export function mondayOf(isoDate: string): string {
+  const weekday = new Date(dayNumber(isoDate) * DAY_MS).getUTCDay(); // 0 = Sunday
+  return addDays(isoDate, -((weekday + 6) % 7));
+}

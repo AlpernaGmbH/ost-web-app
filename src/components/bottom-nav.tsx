@@ -11,6 +11,12 @@ const items = [
     icon: "M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2V5Zm2 0v11.17A4 4 0 0 1 6 16h10V5H6Z",
   },
   {
+    href: "/stundenplan",
+    label: "Plan",
+    active: (p: string) => p.startsWith("/stundenplan"),
+    icon: "M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm12 8H5v10h14V10ZM5 8h14V6H5v2Z",
+  },
+  {
     href: "/settings",
     label: "Einstellungen",
     active: (p: string) => p.startsWith("/settings"),

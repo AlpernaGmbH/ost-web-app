@@ -16,3 +16,12 @@ export function matchModule(title: string, modules: MatchableModule[]): string |
   const hits = modules.filter((m) => keywords(m.ical_match).some((k) => haystack.includes(k)));
   return hits.length === 1 ? hits[0].id : null;
 }
+
+export type MatchResult = { id: string | null; ambiguous: boolean };
+
+/** Like matchModule, but tells "nothing matched" apart from "several modules matched". */
+export function matchModuleDetailed(title: string, modules: MatchableModule[]): MatchResult {
+  const haystack = title.toLowerCase();
+  const hits = modules.filter((m) => keywords(m.ical_match).some((k) => haystack.includes(k)));
+  return { id: hits.length === 1 ? hits[0].id : null, ambiguous: hits.length > 1 };
+}

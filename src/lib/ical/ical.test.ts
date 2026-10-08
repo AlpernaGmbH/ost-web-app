@@ -196,3 +196,59 @@ describe("planSync", () => {
     expect(plan.stats.cancelled).toBe(1);
   });
 });
+
+import { matchModuleDetailed } from "./match";
+
+describe("matchModuleDetailed", () => {
+  const modules = [
+    { id: "wms", ical_match: "statistik" },
+    { id: "sys", ical_match: "systemisch" },
+  ];
+  it("tells no match apart from an ambiguous match", () => {
+    expect(matchModuleDetailed("Statistik Übung", modules)).toEqual({ id: "wms", ambiguous: false });
+    expect(matchModuleDetailed("Mittagspause", modules)).toEqual({ id: null, ambiguous: false });
+    expect(matchModuleDetailed("Statistik und systemisches Denken", modules)).toEqual({ id: null, ambiguous: true });
+  });
+});
+
+describe("planSync with an administration module", () => {
+  const semester = { id: "sem", user_id: "user" };
+  const modules = [
+    { id: "wms", ical_match: "wirtschaftsmathematik" },
+    { id: "sys", ical_match: "systemisch" },
+  ];
+  const now = new Date("2026-10-06T12:00:00Z");
+  const { events } = parseFeed(FEED, RANGE);
+  const find = (plan: ReturnType<typeof planSync>, uid: string) => plan.upserts.find((u) => u.ical_uid === uid);
+
+  it("files events without any keyword match under administration", () => {
+    const plan = planSync({ events, existing: [], modules, fallbackModuleId: "adm", semester, now });
+    expect(find(plan, "cancelled-1@test")?.module_id).toBe("adm"); // "Vertrags- und Haftpflichtrecht" has no module here
+    expect(find(plan, "single-1@test")?.module_id).toBe("wms"); // keyword matches still win
+    expect(plan.stats).toMatchObject({ administration: 1, unmatched: 0 });
+  });
+
+  it("keeps ambiguous matches in the inbox instead of guessing", () => {
+    const both = [...modules, { id: "x", ical_match: "systemisches management" }];
+    const plan = planSync({ events, existing: [], modules: both, fallbackModuleId: "adm", semester, now });
+    const weekly = plan.upserts.filter((u) => u.ical_uid.startsWith("weekly-1@test#"));
+    expect(weekly.every((u) => u.module_id === null)).toBe(true);
+    expect(plan.stats.unmatched).toBe(weekly.length);
+  });
+
+  it("moves events that already sit in the inbox to administration on the next sync", () => {
+    const first = planSync({ events, existing: [], modules, semester, now }); // no administration module yet
+    expect(first.stats.unmatched).toBe(1);
+    const existing = first.upserts.map((u, i) => ({ id: `id-${i}`, ical_uid: u.ical_uid, module_id: u.module_id, title: u.title, starts_at: u.starts_at, ends_at: u.ends_at, location: u.location, status: u.status }));
+    const second = planSync({ events, existing, modules, fallbackModuleId: "adm", semester, now });
+    expect(second.upserts).toHaveLength(1);
+    expect(second.upserts[0]).toMatchObject({ ical_uid: "cancelled-1@test", module_id: "adm" });
+  });
+
+  it("does not touch a module the user assigned by hand", () => {
+    const first = planSync({ events, existing: [], modules, fallbackModuleId: "adm", semester, now });
+    const existing = first.upserts.map((u, i) => ({ id: `id-${i}`, ical_uid: u.ical_uid, module_id: u.ical_uid === "cancelled-1@test" ? "sys" : u.module_id, title: u.title, starts_at: u.starts_at, ends_at: u.ends_at, location: u.location, status: u.status }));
+    const second = planSync({ events, existing, modules, fallbackModuleId: "adm", semester, now });
+    expect(second.upserts).toEqual([]);
+  });
+});
