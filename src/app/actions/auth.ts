@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { FormState } from "@/lib/form-state";
+import { describeSignInError } from "@/lib/auth-errors";
 import { missingSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,13 +19,9 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
-    // 4xx = rejected credentials (one generic message on purpose: do not reveal whether the account
-    // exists). Anything else is an outage or network problem and must not look like a wrong password.
-    const rejected = typeof error.status === "number" && error.status >= 400 && error.status < 500;
-    return {
-      ok: false,
-      message: rejected ? "E-Mail oder Passwort stimmt nicht." : "Anmeldung gerade nicht möglich (Verbindung?). Bitte gleich nochmals versuchen.",
-    };
+    // Diagnostics for the Vercel runtime logs: error class, status and code only, never credentials.
+    console.error("signIn failed", { name: error.name, status: error.status, code: error.code });
+    return { ok: false, message: describeSignInError(error) };
   }
   redirect("/");
 }
