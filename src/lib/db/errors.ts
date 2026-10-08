@@ -15,6 +15,8 @@ const MIGRATION_OF_TABLE: Record<string, string> = {
   decks: "002_vocab.sql",
   cards: "002_vocab.sql",
   card_reviews: "002_vocab.sql",
+  exercises: "004_exercises.sql",
+  exercise_attempts: "004_exercises.sql",
 };
 
 export function describeDbError(error: DbErrorLike): string {

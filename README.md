@@ -29,13 +29,26 @@ Der Import kennt mehrere Listen auf einmal: eine Zeile `## Unit 1 – Titel` sta
 `Begriff | Bedeutung | Beispielsatz` (Beispielsatz optional; Trennzeichen Tab, ` | `, ` - `, `;`, `=`). Der Import ist wiederholbar, ohne Duplikate.
 Setzt `supabase/migrations/002_vocab.sql` voraus.
 
+## Übungsbank (Kursmodule)
+
+Tab **Übungen** (WMS, SYS, VHR): Aufgaben mit Thema, erlaubten Hilfsmitteln (Taschenrechner, Blatt & Stift, Formelsammlung, Tabellen, Computer),
+Zeitschätzung, Niveau, Punkten und Quelle. Pro Aufgabe: Timer, „Lösung zeigen“ (mit Herkunft der Lösung) und Selbstbewertung
+(richtig / teilweise / falsch). Es gibt keine automatische Bewertung und keine KI in der App, Lösungen kommen aus der Quelle oder sind von Hand
+bzw. von Claude hergeleitet (so gekennzeichnet). Setzt `supabase/migrations/004_exercises.sql` voraus.
+
+Aufgaben entstehen von Hand oder per **Übungsdatei** (JSON, `docs/examples/wms-beispiel.json` ist ein Muster): `format` = `ost-exercises/1`,
+`module` = Modulkürzel (muss zum Modul passen), `exercises` = Liste mit `id` (stabil, `a-z0-9._-`; gleiche id = Aktualisierung statt Duplikat),
+`title`, `topic`, `task` (Markdown, Formeln mit `$…$`) und optional `kind` (`calculation` | `multiple_choice` | `open`), `solution` +
+`solution_source` (`source` | `derived` | `manual`), `aids`, `aids_confirmed`, `minutes`, `difficulty` (1–3), `points`, `source`, `source_ref`.
+Ungültige Einträge werden mit Begründung übersprungen, gültige importiert. Quellmaterial (Bücher, Moodle) bleibt ausserhalb des Repos.
+
 ## Entwickeln
 
 ```bash
 npm install
 npm run dev
 npm run lint && npm run typecheck
-npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Formatierung
+npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Kalender, Vokabeln, Übungen
 npm run test:db     # Migration + RLS gegen ein temporäres lokales Postgres (braucht Postgres-Server-Binaries)
 npm run test:e2e    # Playwright-Smoke (Mobile-Viewport), braucht kein Supabase
 ```

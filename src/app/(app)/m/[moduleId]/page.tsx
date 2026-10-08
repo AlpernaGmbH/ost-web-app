@@ -3,11 +3,13 @@ import { notFound } from "next/navigation";
 import { deleteDocument } from "@/app/actions/documents";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DeckForm, ImportUnitsForm, LectureForm, StarterSetForm } from "@/components/forms";
+import { ExercisesTab } from "@/components/exercises-tab";
 import { StudyForm } from "@/components/study-form";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
+import { parseFilter } from "@/lib/exercises/stats";
 import type { DocumentRow, Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDay, formatSize, formatTime } from "@/lib/format";
 import { parseUuidOrNotFound } from "@/lib/ids";
@@ -21,7 +23,8 @@ type LectureRow = Pick<Lecture, "id" | "title" | "starts_at" | "ends_at" | "loca
 export default async function ModulePage({ params, searchParams }: PageProps<"/m/[moduleId]">) {
   const user = await requireUser();
   const moduleId = parseUuidOrNotFound((await params).moduleId);
-  const requestedTab = (await searchParams).tab;
+  const query = await searchParams;
+  const requestedTab = query.tab;
 
   const supabase = await createClient();
   const { data: module } = await supabase
@@ -46,6 +49,8 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
   const tabs = [
     ...(isLanguage ? [{ id: "vokabeln", label: "Vokabeln", href: `/m/${module.id}` }] : []),
     { id: "vorlesungen", label: module.kind === "admin" ? "Termine" : "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
+    // exercise bank: only for regular courses (language modules have vocabulary, Administration has no exercises)
+    ...(module.kind === "course" ? [{ id: "uebungen", label: "Übungen", href: `/m/${module.id}?tab=uebungen` }] : []),
     { id: "dokumente", label: "Dokumente", href: `/m/${module.id}?tab=dokumente` },
   ];
   const defaultTab = isLanguage ? "vokabeln" : "vorlesungen";
@@ -74,6 +79,8 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
 
       {tab === "vokabeln" ? (
         <VocabTab moduleId={module.id} />
+      ) : tab === "uebungen" ? (
+        <ExercisesTab moduleId={module.id} moduleCode={module.code} filter={parseFilter(query)} />
       ) : tab === "vorlesungen" ? (
         <Lectures moduleId={module.id} startDate={semester.start_date} currentWeek={currentWeek} today={zurichDate(now)} />
       ) : (

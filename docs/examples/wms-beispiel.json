@@ -1,0 +1,77 @@
+{
+  "format": "ost-exercises/1",
+  "module": "WMS",
+  "exercises": [
+    {
+      "id": "demo-1",
+      "title": "Mittelwert, Median und Standardabweichung",
+      "topic": "Deskriptive Statistik",
+      "kind": "calculation",
+      "task": "Gegeben sind die acht Beobachtungen $x = (2, 4, 4, 4, 5, 5, 7, 9)$.\n\n1. Berechne den Mittelwert $\\bar{x}$ und den Median.\n2. Berechne die Stichprobenstandardabweichung\n\n$$s = \\sqrt{\\frac{1}{n-1}\\sum_{i=1}^{n}(x_i-\\bar{x})^2}$$",
+      "solution": "1. $\\bar{x} = 40/8 = 5$. Der Median ist der Mittelwert der beiden mittleren Werte: $(4+5)/2 = 4{,}5$.\n2. Die Abweichungsquadrate summieren sich zu $\\sum (x_i-\\bar{x})^2 = 32$. Damit $s = \\sqrt{32/7} \\approx 2{,}138$.",
+      "solution_source": "derived",
+      "aids": [
+        "calculator",
+        "paper"
+      ],
+      "aids_confirmed": false,
+      "minutes": 10,
+      "difficulty": 1,
+      "points": 4,
+      "source": "Beispiel (von Claude, kein Skript)",
+      "source_ref": "Testaufgabe 1"
+    },
+    {
+      "id": "demo-2",
+      "title": "Bedingte Wahrscheinlichkeit (Bayes)",
+      "topic": "Wahrscheinlichkeit",
+      "kind": "calculation",
+      "task": "Ein Test erkennt eine Krankheit mit $P(B\\mid A) = 0{,}8$, meldet aber auch bei Gesunden mit $P(B\\mid \\bar{A}) = 0{,}1$ einen Befund. Die Krankheit kommt bei $P(A) = 0{,}3$ der Personen vor.\n\nWie gross ist die Wahrscheinlichkeit, dass eine Person mit positivem Befund tatsächlich krank ist, also $P(A\\mid B)$?",
+      "solution": "Totale Wahrscheinlichkeit: $P(B) = 0{,}3\\cdot 0{,}8 + 0{,}7\\cdot 0{,}1 = 0{,}31$.\n\nSatz von Bayes: $P(A\\mid B) = \\dfrac{0{,}3\\cdot 0{,}8}{0{,}31} \\approx 0{,}774$.",
+      "solution_source": "derived",
+      "aids": [
+        "calculator"
+      ],
+      "aids_confirmed": false,
+      "minutes": 8,
+      "difficulty": 2,
+      "points": 3,
+      "source": "Beispiel (von Claude, kein Skript)",
+      "source_ref": "Testaufgabe 2"
+    },
+    {
+      "id": "demo-3",
+      "title": "Binomialverteilung",
+      "topic": "Wahrscheinlichkeit",
+      "kind": "multiple_choice",
+      "task": "Eine Maschine produziert mit Wahrscheinlichkeit $p = 0{,}2$ ein defektes Teil. Es werden $n = 10$ Teile unabhängig geprüft. Wie gross ist die Wahrscheinlichkeit, dass **genau zwei** Teile defekt sind?\n\n- A) $0{,}107$\n- B) $0{,}302$\n- C) $0{,}376$\n- D) $0{,}678$",
+      "solution": "Richtig ist **B**: $P(X=2) = \\binom{10}{2}\\cdot 0{,}2^2\\cdot 0{,}8^8 = 45\\cdot 0{,}04\\cdot 0{,}1678 \\approx 0{,}302$.\n\n(C ist $P(X\\le 1) \\approx 0{,}376$.)",
+      "solution_source": "derived",
+      "aids": [
+        "calculator"
+      ],
+      "aids_confirmed": false,
+      "minutes": 5,
+      "difficulty": 2,
+      "points": 2,
+      "source": "Beispiel (von Claude, kein Skript)",
+      "source_ref": "Testaufgabe 3"
+    },
+    {
+      "id": "demo-4",
+      "title": "Median oder Mittelwert?",
+      "topic": "Deskriptive Statistik",
+      "kind": "open",
+      "task": "Ein Dorf hat 99 Einwohner mit einem Monatseinkommen von etwa 5 000 CHF und einen Milliardär. Welches Lagemass beschreibt das «typische» Einkommen besser, Mittelwert oder Median? Begründe in zwei Sätzen.",
+      "solution": "Der Median. Der Mittelwert ist nicht robust gegenüber Ausreissern: Das Einkommen des Milliardärs zieht ihn weit über das, was fast alle verdienen. Der Median bleibt bei rund 5 000 CHF.",
+      "solution_source": "derived",
+      "aids": [],
+      "aids_confirmed": true,
+      "minutes": 3,
+      "difficulty": 1,
+      "points": 2,
+      "source": "Beispiel (von Claude, kein Skript)",
+      "source_ref": "Testaufgabe 4"
+    }
+  ]
+}
