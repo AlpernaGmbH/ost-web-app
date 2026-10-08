@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteDocument } from "@/app/actions/documents";
 import { ConfirmButton } from "@/components/confirm-button";
-import { DeckForm, ImportUnitsForm, LectureForm } from "@/components/forms";
+import { DeckForm, ImportUnitsForm, LectureForm, StarterSetForm } from "@/components/forms";
 import { StudyForm } from "@/components/study-form";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
@@ -257,7 +257,7 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
       {decks.length === 0 ? (
         <Card>
           <p className="text-sm text-muted">
-            Noch keine Wortliste. Importiere unten alle Units auf einmal oder lege eine leere Liste an.
+            Noch keine Wortliste. Importiere unten die Vorlage „EPC1 Units 1–5“ mit einem Klick.
           </p>
         </Card>
       ) : (
@@ -303,7 +303,14 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
       ) : null}
 
       <details className="rounded-xl border border-border bg-card" open={decks.length === 0}>
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Mehrere Listen auf einmal importieren</summary>
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Vorlage: EPC1 Units 1–5 importieren</summary>
+        <div className="border-t border-border p-4">
+          <StarterSetForm moduleId={moduleId} />
+        </div>
+      </details>
+
+      <details className="rounded-xl border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Eigene Listen einfügen (mehrere auf einmal)</summary>
         <div className="border-t border-border p-4">
           <ImportUnitsForm moduleId={moduleId} />
         </div>

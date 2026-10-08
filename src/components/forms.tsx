@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createLecture } from "@/app/actions/lectures";
-import { addCard, createDeck, importCards, importUnits, updateCard } from "@/app/actions/vocab";
+import { addCard, createDeck, importCards, importStarterSet, importUnits, updateCard } from "@/app/actions/vocab";
 import { bootstrapSemester, saveModule, saveSemester, syncNow } from "@/app/actions/semester";
 import type { FormState } from "@/lib/form-state";
 import { Button, FormMessage, inputClass } from "./ui";
@@ -260,6 +260,23 @@ export function ImportUnitsForm({ moduleId }: { moduleId: string }) {
       <FormMessage state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? "Importiert …" : "Alle Listen importieren"}
+      </Button>
+    </form>
+  );
+}
+
+export function StarterSetForm({ moduleId }: { moduleId: string }) {
+  const [state, action, pending] = useActionState(importStarterSet, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="moduleId" value={moduleId} />
+      <p className="text-sm">
+        <span className="font-semibold">EPC1 – Units 1 bis 5</span>
+        <span className="block text-muted">104 Wörter in 5 Listen, je mit englischer Bedeutung und Beispielsatz. Bereits vorhandene Wörter werden nicht doppelt angelegt.</span>
+      </p>
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Importiert …" : "Vorlage importieren"}
       </Button>
     </form>
   );

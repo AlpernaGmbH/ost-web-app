@@ -7,7 +7,8 @@ import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import type { FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
-import { parseImport, parseSections, type ImportRow } from "@/lib/vocab/import";
+import { EPC1_UNITS_1_5 } from "@/data/epc1-units-1-5";
+import { parseImport, parseSections, type ImportRow, type SectionsResult } from "@/lib/vocab/import";
 import { schedule, type Rating } from "@/lib/vocab/srs";
 
 const uuid = z.string().uuid();
@@ -160,16 +161,15 @@ export async function importCards(_prev: FormState, formData: FormData): Promise
   return { ok: true, message: `${parts.join(", ")}.` };
 }
 
-/**
- * Imports several lists at once: "## Name" lines start a list (created if missing, reused otherwise).
- * Running it twice never duplicates words, so a failed import can simply be repeated.
- */
-export async function importUnits(_prev: FormState, formData: FormData): Promise<FormState> {
-  const user = await requireUser();
-  const parsedForm = z.object({ moduleId: uuid, text: z.string().max(400_000, "Text ist zu lang") }).safeParse(Object.fromEntries(formData));
-  if (!parsedForm.success) return { ok: false, message: firstIssue(parsedForm.error) };
+type UserLike = { id: string };
 
-  const { sections, skipped } = parseSections(parsedForm.data.text);
+/** Shared by the paste import and the bundled starter set. Creates missing lists, never duplicates words. */
+async function importSectionsInto(
+  supabase: SupabaseClient,
+  user: UserLike,
+  moduleId: string,
+  { sections, skipped }: SectionsResult,
+): Promise<FormState> {
   const total = sections.reduce((n, section) => n + section.rows.length, 0);
   if (total === 0) {
     return {
@@ -179,8 +179,6 @@ export async function importUnits(_prev: FormState, formData: FormData): Promise
   }
   if (total > IMPORT_MAX_ROWS) return { ok: false, message: `Maximal ${IMPORT_MAX_ROWS} Wörter pro Import.` };
 
-  const supabase = await createClient();
-  const moduleId = parsedForm.data.moduleId;
   const { data: module } = await supabase.from("modules").select("id").eq("id", moduleId).maybeSingle();
   if (!module) return { ok: false, message: "Modul nicht gefunden" };
 
@@ -191,6 +189,11 @@ export async function importUnits(_prev: FormState, formData: FormData): Promise
   let created = 0;
   let added = 0;
   let existing = 0;
+  const failure = (title: string, reason: string): FormState => {
+    revalidatePath(`/m/${moduleId}`, "layout");
+    return { ok: false, message: `Liste „${title}“: ${reason}. Bisher ${added} Wörter importiert, der Import kann gefahrlos wiederholt werden.` };
+  };
+
   for (const section of sections) {
     let deckId = deckByName.get(section.title.toLowerCase());
     if (!deckId) {
@@ -199,10 +202,7 @@ export async function importUnits(_prev: FormState, formData: FormData): Promise
         .insert({ user_id: user.id, module_id: moduleId, name: section.title })
         .select("id")
         .single();
-      if (error || !inserted) {
-        revalidatePath(`/m/${moduleId}`, "layout");
-        return { ok: false, message: `Liste „${section.title}“: ${describeDbError(error ?? { message: "konnte nicht angelegt werden" })}. Bisher ${added} Wörter importiert, der Import kann gefahrlos wiederholt werden.` };
-      }
+      if (error || !inserted) return failure(section.title, describeDbError(error ?? { message: "konnte nicht angelegt werden" }));
       deckId = inserted.id as string;
       deckByName.set(section.title.toLowerCase(), deckId);
       created++;
@@ -210,10 +210,7 @@ export async function importUnits(_prev: FormState, formData: FormData): Promise
     const result = await insertNewCards(supabase, user.id, { id: deckId, module_id: moduleId }, section.rows);
     added += result.added;
     existing += result.existing;
-    if (result.error) {
-      revalidatePath(`/m/${moduleId}`, "layout");
-      return { ok: false, message: `Liste „${section.title}“: ${result.error}. Bisher ${added} Wörter importiert, der Import kann gefahrlos wiederholt werden.` };
-    }
+    if (result.error) return failure(section.title, result.error);
   }
 
   revalidatePath(`/m/${moduleId}`, "layout");
@@ -221,6 +218,24 @@ export async function importUnits(_prev: FormState, formData: FormData): Promise
   if (existing > 0) parts.push(`${existing} schon vorhanden`);
   if (skipped.length > 0) parts.push(`${skipped.length} Zeilen übersprungen (z. B. Zeile ${skipped[0].line}: ${skipped[0].reason})`);
   return { ok: true, message: `${parts.join(", ")}.` };
+}
+
+/** Pasted text with "## Name" lines: one list per heading. Running it twice never duplicates words. */
+export async function importUnits(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const parsedForm = z.object({ moduleId: uuid, text: z.string().max(400_000, "Text ist zu lang") }).safeParse(Object.fromEntries(formData));
+  if (!parsedForm.success) return { ok: false, message: firstIssue(parsedForm.error) };
+  const supabase = await createClient();
+  return importSectionsInto(supabase, user, parsedForm.data.moduleId, parseSections(parsedForm.data.text));
+}
+
+/** One click: the EPC1 word lists (Units 1-5) bundled with the app. */
+export async function importStarterSet(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const parsedForm = z.object({ moduleId: uuid }).safeParse(Object.fromEntries(formData));
+  if (!parsedForm.success) return { ok: false, message: firstIssue(parsedForm.error) };
+  const supabase = await createClient();
+  return importSectionsInto(supabase, user, parsedForm.data.moduleId, parseSections(EPC1_UNITS_1_5));
 }
 
 const reviewInput = z.object({

@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import type { Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDateTime } from "@/lib/format";
+import { isDue } from "@/lib/vocab/srs";
 import { createClient } from "@/lib/supabase/server";
 import { weekNumber } from "@/lib/week";
 
@@ -76,6 +77,25 @@ export default async function HomePage() {
   for (const l of upcomingRes.data ?? []) {
     if (l.module_id && !nextByModule.has(l.module_id)) nextByModule.set(l.module_id, l);
   }
+  // language modules show how many words are due instead of the next lecture
+  const languageIds = modules.filter((m) => m.kind === "language").map((m) => m.id);
+  const vocabStats = new Map<string, { total: number; due: number }>();
+  if (languageIds.length > 0) {
+    // an error (e.g. vocabulary migration not applied yet) just hides the numbers
+    const { data: vocab } = await supabase
+      .from("cards")
+      .select("module_id, due_at")
+      .in("module_id", languageIds)
+      .eq("kind", "vocab")
+      .eq("status", "active")
+      .limit(10000);
+    for (const c of vocab ?? []) {
+      const entry = vocabStats.get(c.module_id) ?? { total: 0, due: 0 };
+      entry.total++;
+      if (isDue({ due_at: c.due_at }, now)) entry.due++;
+      vocabStats.set(c.module_id, entry);
+    }
+  }
   const week = weekNumber(semester.start_date, now);
   const inboxCount = inboxRes.count ?? 0;
 
@@ -95,6 +115,7 @@ export default async function HomePage() {
       <ul className="space-y-3">
         {modules.map((m) => {
           const next = nextByModule.get(m.id);
+          const vocab = vocabStats.get(m.id);
           return (
             <li key={m.id}>
               <Link
@@ -111,7 +132,11 @@ export default async function HomePage() {
                     </span>
                   </span>
                   <span className="mt-1 block text-sm text-muted">
-                    {next ? `Nächste Vorlesung: ${formatDateTime(next.starts_at)}` : "Keine kommende Vorlesung"}
+                    {vocab && vocab.total > 0
+                      ? `${vocab.due} von ${vocab.total} Wörtern zu üben`
+                      : next
+                        ? `Nächste Vorlesung: ${formatDateTime(next.starts_at)}`
+                        : "Keine kommende Vorlesung"}
                   </span>
                 </span>
               </Link>
