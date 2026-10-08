@@ -2,14 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteDocument } from "@/app/actions/documents";
 import { ConfirmButton } from "@/components/confirm-button";
-import { LectureForm } from "@/components/forms";
+import { DeckForm, LectureForm } from "@/components/forms";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
 import { requireUser } from "@/lib/auth";
+import { describeDbError } from "@/lib/db/errors";
 import type { DocumentRow, Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDay, formatSize, formatTime } from "@/lib/format";
 import { parseUuidOrNotFound } from "@/lib/ids";
 import { createClient } from "@/lib/supabase/server";
+import { isDue } from "@/lib/vocab/srs";
 import { formatWeek, shortDate, weekNumber, weekRange, zurichDate } from "@/lib/week";
 
 type LectureRow = Pick<Lecture, "id" | "title" | "starts_at" | "ends_at" | "location" | "status">;
@@ -17,14 +19,14 @@ type LectureRow = Pick<Lecture, "id" | "title" | "starts_at" | "ends_at" | "loca
 export default async function ModulePage({ params, searchParams }: PageProps<"/m/[moduleId]">) {
   const user = await requireUser();
   const moduleId = parseUuidOrNotFound((await params).moduleId);
-  const tab = (await searchParams).tab === "dokumente" ? "dokumente" : "vorlesungen";
+  const requestedTab = (await searchParams).tab;
 
   const supabase = await createClient();
   const { data: module } = await supabase
     .from("modules")
-    .select("id, code, name, ects, color, semester_id")
+    .select("id, code, name, ects, kind, color, semester_id")
     .eq("id", moduleId)
-    .maybeSingle<Pick<Module, "id" | "code" | "name" | "ects" | "color" | "semester_id">>();
+    .maybeSingle<Pick<Module, "id" | "code" | "name" | "ects" | "kind" | "color" | "semester_id">>();
   if (!module) notFound();
 
   const { data: semester } = await supabase
@@ -37,6 +39,16 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
   const now = new Date();
   const currentWeek = weekNumber(semester.start_date, now);
 
+  // language modules get a vocabulary tab and open on it
+  const isLanguage = module.kind === "language";
+  const tabs = [
+    ...(isLanguage ? [{ id: "vokabeln", label: "Vokabeln", href: `/m/${module.id}` }] : []),
+    { id: "vorlesungen", label: "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
+    { id: "dokumente", label: "Dokumente", href: `/m/${module.id}?tab=dokumente` },
+  ];
+  const defaultTab = isLanguage ? "vokabeln" : "vorlesungen";
+  const tab = tabs.some((t) => t.id === requestedTab) ? (requestedTab as string) : defaultTab;
+
   return (
     <>
       <Link href="/" className="mb-3 inline-block text-sm text-muted">
@@ -44,11 +56,8 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
       </Link>
       <PageTitle title={module.name} subtitle={`${module.code}${module.ects > 0 ? ` · ${module.ects} ECTS` : ""}`} />
 
-      <div role="tablist" className="mb-5 grid grid-cols-2 rounded-lg border border-border bg-card p-1 text-sm">
-        {[
-          { id: "vorlesungen", label: "Vorlesungen", href: `/m/${module.id}` },
-          { id: "dokumente", label: "Dokumente", href: `/m/${module.id}?tab=dokumente` },
-        ].map((t) => (
+      <div role="tablist" className={`mb-5 grid ${tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"} rounded-lg border border-border bg-card p-1 text-sm`}>
+        {tabs.map((t) => (
           <Link
             key={t.id}
             href={t.href}
@@ -61,7 +70,9 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
         ))}
       </div>
 
-      {tab === "vorlesungen" ? (
+      {tab === "vokabeln" ? (
+        <VocabTab moduleId={module.id} />
+      ) : tab === "vorlesungen" ? (
         <Lectures moduleId={module.id} startDate={semester.start_date} currentWeek={currentWeek} today={zurichDate(now)} />
       ) : (
         <Documents moduleId={module.id} userId={user.id} />
@@ -205,6 +216,77 @@ async function Documents({ moduleId, userId }: { moduleId: string; userId: strin
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+async function VocabTab({ moduleId }: { moduleId: string }) {
+  const supabase = await createClient();
+  const [decksRes, cardsRes] = await Promise.all([
+    supabase.from("decks").select("id, name").eq("module_id", moduleId).order("created_at"),
+    supabase.from("cards").select("deck_id, due_at, status").eq("module_id", moduleId).eq("kind", "vocab").limit(10000),
+  ]);
+
+  const error = decksRes.error ?? cardsRes.error;
+  if (error) {
+    return (
+      <Card>
+        <p className="text-sm">{describeDbError(error)}</p>
+      </Card>
+    );
+  }
+
+  const now = new Date();
+  const stats = new Map<string, { total: number; due: number }>();
+  for (const c of cardsRes.data ?? []) {
+    if (!c.deck_id || c.status !== "active") continue;
+    const entry = stats.get(c.deck_id) ?? { total: 0, due: 0 };
+    entry.total++;
+    if (isDue({ due_at: c.due_at }, now)) entry.due++;
+    stats.set(c.deck_id, entry);
+  }
+  const decks = decksRes.data ?? [];
+
+  return (
+    <div className="space-y-4">
+      {decks.length === 0 ? (
+        <Card>
+          <p className="text-sm text-muted">
+            Noch keine Wortliste. Lege unten eine Liste an (z. B. pro Unit) und füge deine Wörter ein.
+          </p>
+        </Card>
+      ) : (
+        <ul className="space-y-3">
+          {decks.map((deck) => {
+            const s = stats.get(deck.id) ?? { total: 0, due: 0 };
+            return (
+              <li key={deck.id}>
+                <Link
+                  href={`/m/${moduleId}/vocab/${deck.id}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-border/30"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">{deck.name}</span>
+                    <span className="text-sm text-muted">{s.total} Wörter</span>
+                  </span>
+                  {s.due > 0 ? (
+                    <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-sm font-medium text-primary">{s.due} fällig</span>
+                  ) : (
+                    <span className="shrink-0 text-sm text-muted">{s.total > 0 ? "alles erledigt" : "leer"}</span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <details className="rounded-xl border border-border bg-card" open={decks.length === 0}>
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Neue Wortliste</summary>
+        <div className="border-t border-border p-4">
+          <DeckForm moduleId={moduleId} />
+        </div>
+      </details>
     </div>
   );
 }

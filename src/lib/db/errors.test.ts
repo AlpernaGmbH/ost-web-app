@@ -9,8 +9,11 @@ describe("db errors", () => {
     expect(isMissingTable(null)).toBe(false);
   });
 
-  it("tells the user which file to run when tables are missing", () => {
-    expect(describeDbError({ code: "PGRST205" })).toMatch(/001_phase1\.sql/);
+  it("names the migration file that creates the missing table", () => {
+    expect(describeDbError({ code: "PGRST205", message: "Could not find the table 'public.semesters' in the schema cache" })).toMatch(/001_phase1\.sql/);
+    expect(describeDbError({ code: "PGRST205", message: "Could not find the table 'public.decks' in the schema cache" })).toMatch(/002_vocab\.sql/);
+    expect(describeDbError({ code: "42P01", message: 'relation "cards" does not exist' })).toMatch(/002_vocab\.sql/);
+    expect(describeDbError({ code: "PGRST205" })).toMatch(/001_phase1\.sql/); // unknown table: first migration
   });
 
   it("explains RLS rejections and passes other errors through with their code", () => {

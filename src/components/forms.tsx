@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createLecture } from "@/app/actions/lectures";
+import { addCard, createDeck, importCards, updateCard } from "@/app/actions/vocab";
 import { bootstrapSemester, saveModule, saveSemester, syncNow } from "@/app/actions/semester";
 import type { FormState } from "@/lib/form-state";
 import { Button, FormMessage, inputClass } from "./ui";
@@ -137,6 +138,102 @@ export function BootstrapForm() {
       <Button type="submit" disabled={pending}>
         {pending ? "Richtet ein …" : "Semester HS26 einrichten"}
       </Button>
+    </form>
+  );
+}
+
+export function DeckForm({ moduleId }: { moduleId: string }) {
+  const [state, action, pending] = useActionState(createDeck, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="moduleId" value={moduleId} />
+      <label className="block text-sm">
+        Name der Liste
+        <input name="name" required maxLength={80} placeholder="z. B. Unit 3 – Business" className={`${inputClass} mt-1`} />
+      </label>
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Speichert …" : "Liste anlegen"}
+      </Button>
+    </form>
+  );
+}
+
+export function AddCardForm({ deckId }: { deckId: string }) {
+  const [state, action, pending] = useActionState(addCard, initial);
+  return (
+    <form key={state.ok ? state.message : "form"} action={action} className="space-y-3">
+      <input type="hidden" name="deckId" value={deckId} />
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-sm">
+          English
+          <input name="front" required maxLength={500} autoCapitalize="none" className={`${inputClass} mt-1`} />
+        </label>
+        <label className="block text-sm">
+          Deutsch
+          <input name="back" required maxLength={500} className={`${inputClass} mt-1`} />
+        </label>
+      </div>
+      <label className="block text-sm">
+        Beispielsatz (optional)
+        <input name="example" maxLength={500} className={`${inputClass} mt-1`} />
+      </label>
+      <p className="text-xs text-muted">Mehrere Bedeutungen mit „;“ trennen, z. B. „rennen; laufen“. Beim Schreiben zählt jede.</p>
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Speichert …" : "Wort hinzufügen"}
+      </Button>
+    </form>
+  );
+}
+
+export function ImportForm({ deckId }: { deckId: string }) {
+  const [state, action, pending] = useActionState(importCards, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="deckId" value={deckId} />
+      <label className="block text-sm">
+        Wortliste einfügen
+        <textarea
+          name="text"
+          required
+          rows={8}
+          placeholder={"to run - rennen\nachieve; erreichen\nhouse = Haus"}
+          className="mt-1 w-full rounded-lg border border-border bg-card p-3 font-mono text-[15px] focus:outline-2 focus:outline-primary"
+        />
+      </label>
+      <p className="text-xs text-muted">
+        Ein Wort pro Zeile: <code>English - Deutsch</code>. Erlaubt sind Tab, „ - “, „;“, „=“ oder „ : “. Optional eine dritte Spalte mit einem
+        Beispielsatz. Bereits vorhandene Wörter werden übersprungen.
+      </p>
+      <FormMessage state={state} />
+      <Button type="submit" disabled={pending}>
+        {pending ? "Importiert …" : "Importieren"}
+      </Button>
+    </form>
+  );
+}
+
+export function EditCardForm({
+  card,
+}: {
+  card: { id: string; front_md: string; back_md: string; example: string | null };
+}) {
+  const [state, action, pending] = useActionState(updateCard, initial);
+  return (
+    <form action={action} className="space-y-2 px-4 pb-3">
+      <input type="hidden" name="cardId" value={card.id} />
+      <div className="grid grid-cols-2 gap-2">
+        <input name="front" required maxLength={500} defaultValue={card.front_md} aria-label="English" className={inputClass} />
+        <input name="back" required maxLength={500} defaultValue={card.back_md} aria-label="Deutsch" className={inputClass} />
+      </div>
+      <input name="example" maxLength={500} defaultValue={card.example ?? ""} placeholder="Beispielsatz" aria-label="Beispielsatz" className={inputClass} />
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="secondary" disabled={pending}>
+          {pending ? "Speichert …" : "Speichern"}
+        </Button>
+        <FormMessage state={state} />
+      </div>
     </form>
   );
 }
