@@ -1,6 +1,6 @@
 // Shared vocabulary of the exercise bank (mirrors supabase/migrations/004_exercises.sql).
 
-export const AID_IDS = ["calculator", "paper", "formula_sheet", "tables", "computer"] as const;
+export const AID_IDS = ["calculator", "paper", "formula_sheet", "tables", "computer", "script"] as const;
 export type Aid = (typeof AID_IDS)[number];
 export const AIDS: readonly { id: Aid; label: string }[] = [
   { id: "calculator", label: "Taschenrechner" },
@@ -8,6 +8,7 @@ export const AIDS: readonly { id: Aid; label: string }[] = [
   { id: "formula_sheet", label: "Formelsammlung" },
   { id: "tables", label: "Tabellen" },
   { id: "computer", label: "Computer / Excel" },
+  { id: "script", label: "Skript / Zusammenfassung" },
 ];
 
 export const KIND_IDS = ["calculation", "multiple_choice", "open"] as const;

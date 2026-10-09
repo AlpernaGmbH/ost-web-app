@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { exerciseFromForm, exerciseInput, parseExerciseFile } from "./schema";
 import { filterExercises, formatDuration, formatMinutes, latestResult, parseFilter, summarize, topicStats } from "./stats";
@@ -172,5 +172,17 @@ describe("example file", () => {
     expect(parsed.invalid).toEqual([]);
     expect(parsed.exercises.map((e) => e.external_id)).toEqual(["demo-1", "demo-2", "demo-3", "demo-4"]);
     expect(parsed.exercises.every((e) => e.solution && e.solution_source === "derived")).toBe(true);
+  });
+});
+
+// Files in import/ are generated from course material and are not committed. When present they must import cleanly.
+const localFiles = existsSync("import") ? readdirSync("import").filter((f) => /^[\w.-]+\.json$/.test(f) && f.includes("tests")) : [];
+describe.skipIf(localFiles.length === 0)("local exercise files in import/", () => {
+  it.each(localFiles)("%s imports without a single skipped entry", (file) => {
+    const parsed = parseExerciseFile(readFileSync(`import/${file}`, "utf8"));
+    if ("error" in parsed) throw new Error(parsed.error);
+    expect(parsed.invalid).toEqual([]);
+    expect(parsed.exercises.length).toBeGreaterThan(0);
+    expect(parsed.exercises.every((e) => e.solution !== null && e.solution_source !== null)).toBe(true);
   });
 });

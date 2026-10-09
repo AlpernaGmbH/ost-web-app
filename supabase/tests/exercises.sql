@@ -2,6 +2,8 @@
 -- Runs after all migrations (run.sh) from the repository root.
 \i supabase/migrations/004_exercises.sql
 \i supabase/migrations/004_exercises.sql
+\i supabase/migrations/005_aid_script.sql
+\i supabase/migrations/005_aid_script.sql
 
 \set A '''dddddddd-dddd-dddd-dddd-dddddddddddd'''
 \set B '''eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'''
@@ -30,6 +32,9 @@ begin
 
   -- empty aids and exercises without solution are fine
   insert into public.exercises (module_id, title, topic, task_md) values ('d2222222-0000-0000-0000-000000000001', 'Ohne Lösung', 'Test', 'Aufgabe');
+
+  -- migration 005: "script" is an allowed aid
+  insert into public.exercises (module_id, title, topic, task_md, aids) values ('d2222222-0000-0000-0000-000000000001', 'Mit Skript', 'Test', 'Aufgabe', array['calculator', 'script']);
 
   -- aids outside the known list are rejected
   begin
@@ -131,4 +136,4 @@ begin
 end;
 $$;
 reset role;
-\echo 'migration 004 exercises: OK'
+\echo 'migration 004/005 exercises: OK'
