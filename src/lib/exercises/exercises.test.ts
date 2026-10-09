@@ -176,7 +176,7 @@ describe("example file", () => {
 });
 
 // Files in import/ are generated from course material and are not committed. When present they must import cleanly.
-const localFiles = existsSync("import") ? readdirSync("import").filter((f) => /^[\w.-]+\.json$/.test(f) && f.includes("tests")) : [];
+const localFiles = existsSync("import") ? readdirSync("import").filter((f) => /^[\w.-]+\.json$/.test(f) && /tests|uebungen/.test(f)) : [];
 describe.skipIf(localFiles.length === 0)("local exercise files in import/", () => {
   it.each(localFiles)("%s imports without a single skipped entry", (file) => {
     const parsed = parseExerciseFile(readFileSync(`import/${file}`, "utf8"));
