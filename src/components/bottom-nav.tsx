@@ -7,8 +7,14 @@ const items = [
   {
     href: "/",
     label: "Module",
-    active: (p: string) => p === "/" || p.startsWith("/m/"),
+    active: (p: string) => p === "/" || (p.startsWith("/m/") && !/^\/m\/[^/]+\/(ex|vocab)\//.test(p)),
     icon: "M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2V5Zm2 0v11.17A4 4 0 0 1 6 16h10V5H6Z",
+  },
+  {
+    href: "/ueben",
+    label: "Üben",
+    active: (p: string) => p.startsWith("/ueben") || /^\/m\/[^/]+\/(ex|vocab)\//.test(p),
+    icon: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.4-4-4 1.4-1.4 2.6 2.6 5-5 1.4 1.4-6.4 6.4Z",
   },
   {
     href: "/stundenplan",

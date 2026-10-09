@@ -80,7 +80,7 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
       {tab === "vokabeln" ? (
         <VocabTab moduleId={module.id} />
       ) : tab === "uebungen" ? (
-        <ExercisesTab moduleId={module.id} moduleCode={module.code} filter={parseFilter(query)} />
+        <ExercisesTab moduleId={module.id} moduleCode={module.code} filter={parseFilter(query)} searchParams={query} />
       ) : tab === "vorlesungen" ? (
         <Lectures moduleId={module.id} startDate={semester.start_date} currentWeek={currentWeek} today={zurichDate(now)} />
       ) : (
