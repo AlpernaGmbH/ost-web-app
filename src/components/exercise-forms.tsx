@@ -124,8 +124,8 @@ export function ExerciseImportForm({ moduleId, moduleCode }: { moduleId: string;
     <form action={action} className="space-y-3">
       <input type="hidden" name="moduleId" value={moduleId} />
       <label className="block text-sm">
-        Übungsdatei (.json) für {moduleCode}
-        <input type="file" name="file" accept=".json,application/json" className={`${inputClass} mt-1 py-2`} />
+        Übungsdatei für {moduleCode}
+        <input type="file" name="file" className={`${inputClass} mt-1 py-2`} />
       </label>
       <label className="block text-sm">
         … oder den Inhalt hier einfügen
