@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AgendaView } from "@/components/agenda";
 import { BootstrapForm } from "@/components/forms";
 import { ModuleChip } from "@/components/module-chip";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, PageTitle } from "@/components/ui";
 import { groupWeek, type AgendaLecture } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
@@ -129,6 +130,7 @@ export default async function HomePage() {
   return (
     <>
       <PageTitle
+        action={<ThemeToggle variant="icon" />}
         title="Module"
         subtitle={week >= 1 ? `${semester.name} · Woche ${String(week).padStart(2, "0")}` : `${semester.name} · beginnt am ${semester.start_date}`}
       />

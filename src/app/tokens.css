@@ -1,6 +1,7 @@
 /*
  * Pensum design tokens. Source: "Pensum Corporate Design" (PDF, 9 Oct 2026).
- * Light is the default, dark follows the system (prefers-color-scheme).
+ * Light is the default, dark follows the system (prefers-color-scheme). The user can force either one:
+ * data-theme="light" or data-theme="dark" on <html> (see lib/theme.ts).
  * Values marked "derived" are not in the PDF: they were chosen here and checked for >= 4.5:1 text contrast
  * (>= 3:1 for borders and focus), the same rule the PDF sets for itself.
  * Colors, radii, spacing and fonts are only ever used through these variables. Shape, spacing, font and shadow tokens carry a "pn-" prefix so they cannot collide with Tailwind's own theme variables.
@@ -61,8 +62,10 @@
   --pn-shadow-lift: 0 12px 32px rgb(20 35 42 / 0.16);
 }
 
+/* Dark values exist twice on purpose (CSS cannot share one block between a media query and an attribute selector):
+ * 1. the system is dark and the user did not force light, 2. the user forced dark. tokens.test.ts keeps them identical. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     --primary: #46c2bb;
@@ -111,6 +114,56 @@
     --pn-shadow-card: 0 4px 16px rgb(0 0 0 / 0.35);
     --pn-shadow-lift: 0 12px 32px rgb(0 0 0 / 0.5);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --primary: #46c2bb;
+  --primary-ink: #5fd0c9;
+  --primary-soft: #12383a;
+  --accent: #ffb84d;
+  --accent-ink: #ffc970;
+  --accent-soft: #3a2c0e;
+  --brand-deep: #1f6f6e;
+
+  --surface-100: #0f1a1f;
+  --surface-raised: #1c2d35;
+  --surface-200: #16242b;
+  --ink: #e8efef;
+  --ink-muted: #a2b5bb;
+  --border-control: #5e7881;
+  --hairline: #2c4048;
+
+  --success: #5fd08f;
+  --success-soft: #12301f;
+  --error: #ff9a7e;
+  --error-soft: #3a1a12;
+
+  --mod-1: #12383a;
+  --mod-1-ink: #a5e6e1;
+  --mod-2: #3a2c0e;
+  --mod-2-ink: #ffd98a;
+  --mod-3: #3f1d14;
+  --mod-3-ink: #ffc1ac;
+  --mod-4: #15304a;
+  --mod-4-ink: #b5d5f5;
+  --mod-5: #3f1830;
+  --mod-5-ink: #f5b9da;
+  --mod-6: #26331a;
+  --mod-6-ink: #c9e3a0;
+
+  --on-primary: #0f1a1f;
+  --primary-press: #62d0c9;
+  --on-primary-soft: #a5e6e1;
+  --on-accent: #0f1a1f;
+  --on-accent-soft: #ffc970;
+  --on-brand-deep: #f3f6f6;
+  --on-success-soft: #5fd08f;
+  --on-error-soft: #ff9a7e;
+  --focus: #e8efef;
+  --pn-shadow-card: 0 4px 16px rgb(0 0 0 / 0.35);
+  --pn-shadow-lift: 0 12px 32px rgb(0 0 0 / 0.5);
 }
 
 :root {

@@ -59,6 +59,29 @@ test.describe("login page (mobile)", () => {
   });
 });
 
+test.describe("theme", () => {
+  // page color of the two themes (surface-100); the stored choice beats the system setting, no choice follows it
+  const LIGHT = "rgb(243, 246, 246)";
+  const DARK = "rgb(15, 26, 31)";
+  const cases: [string, "light" | "dark", string | null, string][] = [
+    ["follows a light system", "light", null, LIGHT],
+    ["follows a dark system", "dark", null, DARK],
+    ["forced dark beats a light system", "light", "dark", DARK],
+    ["forced light beats a dark system", "dark", "light", LIGHT],
+  ];
+  for (const [name, system, stored, expected] of cases) {
+    test(name, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: system });
+      if (stored) await page.addInitScript((value) => window.localStorage.setItem("pn-theme", value), stored);
+      await page.goto("/login");
+      await expect(page.getByRole("heading", { name: "Pensum" })).toBeVisible();
+      const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      expect(background).toBe(expected);
+      expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe(stored);
+    });
+  }
+});
+
 test.describe("PWA", () => {
   test("manifest is valid and its icons exist", async ({ request }) => {
     const response = await request.get("/manifest.webmanifest");

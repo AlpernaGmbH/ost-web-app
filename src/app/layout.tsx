@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { ThemeSync } from "@/components/theme-toggle";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "@fontsource-variable/bricolage-grotesque/opsz.css";
 import "@fontsource-variable/source-sans-3/index.css";
 import "@fontsource-variable/jetbrains-mono/index.css";
@@ -26,8 +28,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="de-CH" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+    // data-theme is set by the init script before React hydrates, hence suppressHydrationWarning
+    <html lang="de-CH" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-full">
+        <ThemeSync />
+        {children}
+      </body>
     </html>
   );
 }

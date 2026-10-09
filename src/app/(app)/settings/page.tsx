@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { assignLecture } from "@/app/actions/semester";
 import { signOut } from "@/app/actions/auth";
 import { ModuleForm, SemesterForm, SyncForm } from "@/components/forms";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import type { Lecture, Module, Semester } from "@/lib/db/types";
@@ -56,6 +57,12 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-8">
       <PageTitle title="Einstellungen" subtitle={user.email} />
+
+      <section aria-labelledby="look" className="space-y-3">
+        <h2 id="look" className="heading">Darstellung</h2>
+        <ThemeToggle />
+        <p className="small text-muted">«System» folgt deinem Gerät. Die Wahl gilt für dieses Gerät.</p>
+      </section>
 
       <section aria-labelledby="sem" className="space-y-3">
         <h2 id="sem" className="heading">Semester & Stundenplan</h2>

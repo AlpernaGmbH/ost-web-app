@@ -40,11 +40,14 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <div className={`rounded-card border border-border bg-card p-6 ${className}`.trim()}>{children}</div>;
 }
 
-export function PageTitle({ title, subtitle, size = "lg" }: { title: string; subtitle?: ReactNode; size?: "lg" | "md" }) {
+export function PageTitle({ title, subtitle, size = "lg", action }: { title: string; subtitle?: ReactNode; size?: "lg" | "md"; action?: ReactNode }) {
   return (
-    <header className="mb-6">
-      <h1 className={size === "lg" ? "display-lg" : "display-md"}>{title}</h1>
-      {subtitle ? <div className="small mt-2 text-muted">{subtitle}</div> : null}
+    <header className="mb-6 flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className={size === "lg" ? "display-lg" : "display-md"}>{title}</h1>
+        {subtitle ? <div className="small mt-2 text-muted">{subtitle}</div> : null}
+      </div>
+      {action}
     </header>
   );
 }
