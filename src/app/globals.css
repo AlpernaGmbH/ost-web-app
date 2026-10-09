@@ -1,42 +1,41 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --primary: #4f46e5;
-  --primary-foreground: #ffffff;
-  --danger: #dc2626;
-  --success: #15803d;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b1020;
-    --foreground: #e5e7eb;
-    --card: #131a2e;
-    --muted: #94a3b8;
-    --border: #243049;
-    --primary: #818cf8;
-    --primary-foreground: #0b1020;
-    --danger: #f87171;
-    --success: #4ade80;
-  }
-}
-
+/* Tokens (colors, shape, fonts) live in tokens.css; Tailwind only maps them to class names here. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
+  --color-background: var(--surface-100);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface-raised);
+  --color-sunken: var(--surface-200);
+  --color-muted: var(--ink-muted);
+  --color-border: var(--hairline);
+  --color-control: var(--border-control);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-danger: var(--danger);
+  --color-primary-foreground: var(--on-primary);
+  --color-primary-press: var(--primary-press);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary-soft: var(--on-primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-brand-deep: var(--brand-deep);
+  --color-on-brand-deep: var(--on-brand-deep);
   --color-success: var(--success);
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --color-success-soft: var(--success-soft);
+  --color-on-success-soft: var(--on-success-soft);
+  --color-danger: var(--error);
+  --color-danger-soft: var(--error-soft);
+  --color-on-danger-soft: var(--on-error-soft);
+  --radius-pill: var(--pn-radius-pill);
+  --radius-field: var(--pn-radius-field);
+  --radius-card: var(--pn-radius-card);
+  --radius-tag: var(--pn-radius-tag);
+  --shadow-card: var(--pn-shadow-card);
+  --shadow-lift: var(--pn-shadow-lift);
+  --font-sans: var(--pn-font-text);
+  --font-display: var(--pn-font-display);
+  --font-mono: var(--pn-font-mono);
 }
 
 html {
@@ -44,10 +43,36 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  background: var(--surface-100);
+  color: var(--ink);
+  font-family: var(--pn-font-text);
+  font-size: 16px;
+  line-height: 24px;
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* focus: 3 px ring with 3 px offset in ink color on every interactive element, never removed */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* type scale (Pensum Corporate Design) */
+.display-xl { font: 800 56px/60px var(--pn-font-display); letter-spacing: -0.02em; }
+.display-lg { font: 700 40px/44px var(--pn-font-display); letter-spacing: -0.01em; }
+.display-md { font: 700 28px/34px var(--pn-font-display); letter-spacing: -0.01em; }
+.heading { font: 700 22px/28px var(--pn-font-display); }
+.card-word { font: 700 32px/40px var(--pn-font-display); }
+.body-lg { font: 400 18px/28px var(--pn-font-text); }
+.body { font: 400 16px/24px var(--pn-font-text); }
+.small { font: 400 14px/20px var(--pn-font-text); }
+.label { font: 700 12px/16px var(--pn-font-text); letter-spacing: 0.06em; text-transform: uppercase; }
+.score { font: 600 28px/32px var(--pn-font-mono); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--pn-font-mono); font-variant-numeric: tabular-nums; }
+.wordmark { font-family: var(--pn-font-display); font-weight: 800; line-height: 0.95; letter-spacing: -0.02em; color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 
 /* rendered markdown notes (react-markdown + KaTeX) */
@@ -62,12 +87,12 @@ body {
 .note-prose ul { list-style: disc; padding-left: 1.4rem; }
 .note-prose ol { list-style: decimal; padding-left: 1.4rem; }
 .note-prose li + li { margin-top: 0.25rem; }
-.note-prose a { color: var(--primary); text-decoration: underline; }
-.note-prose blockquote { border-left: 3px solid var(--border); padding-left: 0.75rem; color: var(--muted); }
-.note-prose code { background: var(--border); border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.9em; }
-.note-prose pre { background: var(--border); border-radius: 8px; padding: 0.75rem; overflow-x: auto; }
+.note-prose a { color: var(--primary-ink); text-decoration: underline; }
+.note-prose blockquote { border-left: 3px solid var(--hairline); padding-left: 0.75rem; color: var(--ink-muted); }
+.note-prose code { background: var(--hairline); border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.9em; }
+.note-prose pre { background: var(--hairline); border-radius: 8px; padding: 0.75rem; overflow-x: auto; }
 .note-prose pre code { background: none; padding: 0; }
 /* wide tables scroll sideways; cells wrap at word boundaries only (the prose default "anywhere" would squeeze columns to nothing) */
 .note-prose table { border-collapse: collapse; display: block; overflow-x: auto; }
-.note-prose th, .note-prose td { border: 1px solid var(--border); padding: 0.35rem 0.6rem; overflow-wrap: normal; vertical-align: top; }
+.note-prose th, .note-prose td { border: 1px solid var(--hairline); padding: 0.35rem 0.6rem; overflow-wrap: normal; vertical-align: top; }
 .note-prose .katex-display { overflow-x: auto; overflow-y: hidden; }

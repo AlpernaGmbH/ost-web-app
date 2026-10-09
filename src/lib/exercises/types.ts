@@ -38,7 +38,7 @@ export type Result = (typeof RESULT_IDS)[number];
 export const RESULTS: readonly { id: Result; label: string }[] = [
   { id: "correct", label: "Richtig" },
   { id: "partial", label: "Teilweise" },
-  { id: "wrong", label: "Falsch" },
+  { id: "wrong", label: "Nicht ganz" },
 ];
 
 export const labelOf = <T extends { id: string | number; label: string }>(list: readonly T[], id: string | number | null | undefined): string =>

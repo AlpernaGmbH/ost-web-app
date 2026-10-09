@@ -11,6 +11,7 @@ import { buildMonth, isMonth, monthBounds, monthLabel, shiftMonth } from "@/lib/
 import { describeDbError } from "@/lib/db/errors";
 import type { Module, Semester } from "@/lib/db/types";
 import { formatDay } from "@/lib/format";
+import { assignTones } from "@/lib/module-tone";
 import { createClient } from "@/lib/supabase/server";
 import { addDays, formatWeek, mondayOf, shortDate, weekNumber, zurichDate, zurichInstant } from "@/lib/week";
 
@@ -40,7 +41,7 @@ function href(view: View, params: { date?: string; month?: string; day?: string 
   return qs ? `/stundenplan?${qs}` : "/stundenplan";
 }
 
-const navLink = "inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-4";
+const navLink = "inline-flex min-h-12 items-center rounded-pill border-2 border-control bg-card px-5 font-bold text-primary-ink hover:bg-primary-soft hover:text-on-primary-soft";
 
 export default async function TimetablePage({ searchParams }: PageProps<"/stundenplan">) {
   await requireUser();
@@ -90,12 +91,13 @@ export default async function TimetablePage({ searchParams }: PageProps<"/stunde
       .lt("starts_at", range.to.toISOString())
       .order("starts_at")
       .returns<AgendaLecture[]>(),
-    supabase.from("modules").select("id, code, color, kind").eq("semester_id", semester.id).returns<Pick<Module, "id" | "code" | "color" | "kind">[]>(),
+    supabase.from("modules").select("id, code, kind").eq("semester_id", semester.id).order("sort_order").returns<Pick<Module, "id" | "code" | "kind">[]>(),
   ]);
   const error = lecturesRes.error ?? modulesRes.error;
   if (error) return <Card>{describeDbError(error)}</Card>;
 
-  const modules = new Map<string, AgendaModule>((modulesRes.data ?? []).map((m) => [m.id, { code: m.code, color: m.color, admin: m.kind === "admin" }]));
+  const tones = assignTones(modulesRes.data ?? []);
+  const modules = new Map<string, AgendaModule>((modulesRes.data ?? []).map((m) => [m.id, { code: m.code, tone: tones.get(m.id) ?? 0, admin: m.kind === "admin" }]));
   const lectures = lecturesRes.data ?? [];
 
   const week = weekNumber(semester.start_date, zurichInstant(monday, "12:00"));
@@ -108,13 +110,13 @@ export default async function TimetablePage({ searchParams }: PageProps<"/stunde
     <>
       <PageTitle title="Stundenplan" subtitle={subtitle} />
 
-      <nav aria-label="Ansicht" className="mb-3 grid grid-cols-3 gap-1 rounded-xl border border-border bg-card p-1 text-sm">
+      <nav aria-label="Ansicht" className="mb-3 grid grid-cols-3 gap-1 rounded-pill border border-border bg-card p-1 text-sm">
         {VIEWS.map((v) => (
           <Link
             key={v.id}
             href={v.id === "month" ? href("month", { month: anchor.slice(0, 7), day: anchor }) : href(v.id, { date: anchor })}
             aria-current={v.id === view ? "page" : undefined}
-            className={`inline-flex min-h-10 items-center justify-center rounded-lg font-medium ${v.id === view ? "bg-primary text-primary-foreground" : "hover:bg-border/40"}`}
+            className={`inline-flex min-h-10 items-center justify-center rounded-pill font-bold ${v.id === view ? "bg-primary text-primary-foreground" : "hover:bg-sunken"}`}
           >
             {v.label}
           </Link>
@@ -127,7 +129,7 @@ export default async function TimetablePage({ searchParams }: PageProps<"/stunde
             ← Vormonat
           </Link>
           {month !== today.slice(0, 7) ? (
-            <Link href={href("month", { month: today.slice(0, 7), day: today })} className="inline-flex min-h-11 items-center rounded-lg px-3 text-primary">
+            <Link href={href("month", { month: today.slice(0, 7), day: today })} className="inline-flex min-h-12 items-center rounded-pill px-4 font-bold text-primary-ink hover:bg-primary-soft">
               Dieser Monat
             </Link>
           ) : null}
@@ -141,7 +143,7 @@ export default async function TimetablePage({ searchParams }: PageProps<"/stunde
             ← Vorwoche
           </Link>
           {monday !== currentMonday ? (
-            <Link href={href(view)} className="inline-flex min-h-11 items-center rounded-lg px-3 text-primary">
+            <Link href={href(view)} className="inline-flex min-h-12 items-center rounded-pill px-4 font-bold text-primary-ink hover:bg-primary-soft">
               Diese Woche
             </Link>
           ) : null}
@@ -152,7 +154,7 @@ export default async function TimetablePage({ searchParams }: PageProps<"/stunde
       )}
 
       {!semester.ical_url ? (
-        <Link href="/settings" className="mb-4 block rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
+        <Link href="/settings" className="mb-4 block rounded-field bg-primary-soft p-4 text-on-primary-soft">
           Noch kein Stundenplan verbunden: iCal-Link in den Einstellungen eintragen →
         </Link>
       ) : null}

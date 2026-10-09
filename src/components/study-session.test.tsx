@@ -84,7 +84,7 @@ describe("write mode", () => {
     render(<StudySession mode="write" entries={[entry("a", "house", "Haus")]} {...props} />);
     await user.type(screen.getByLabelText(/Antwort: Bedeutung/), "Maus");
     await user.click(screen.getByRole("button", { name: "Prüfen" }));
-    expect(screen.getByTestId("feedback")).toHaveTextContent("Leider falsch");
+    expect(screen.getByTestId("feedback")).toHaveTextContent("Nicht ganz");
     expect(screen.getByTestId("feedback")).toHaveTextContent("Haus");
     await user.click(screen.getByRole("button", { name: "Weiter" }));
     expect(recordReview).toHaveBeenCalledWith({ cardId: "a", rating: 0, mode: "write" });
@@ -116,7 +116,7 @@ describe("choice mode and summary", () => {
     await user.click(screen.getByRole("button", { name: "Weiter" }));
 
     expect(screen.getByTestId("summary")).toHaveTextContent("1 von 2");
-    await user.click(screen.getByRole("button", { name: "Falsche nochmals üben" }));
+    await user.click(screen.getByRole("button", { name: "Offene Begriffe üben" }));
     expect(screen.getByTestId("prompt")).toHaveTextContent("house");
     expect(screen.getByText("1 / 1")).toBeVisible();
   });

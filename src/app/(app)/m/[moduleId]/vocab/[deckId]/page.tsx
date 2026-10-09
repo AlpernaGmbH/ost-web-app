@@ -48,7 +48,7 @@ export default async function DeckPage({ params }: PageProps<"/m/[moduleId]/voca
 
   return (
     <>
-      <Link href={`/m/${moduleId}`} className="mb-3 inline-block text-sm text-muted">
+      <Link href={`/m/${moduleId}`} className="mb-4 inline-flex min-h-9 items-center font-bold text-primary-ink">
         ← Vokabeln
       </Link>
       <PageTitle title={deck.name} subtitle={`${cards.length} Wörter · ${due} zu wiederholen · ${fresh} neu · ${learned} gefestigt`} />
@@ -64,14 +64,14 @@ export default async function DeckPage({ params }: PageProps<"/m/[moduleId]/voca
       )}
 
       <div className="space-y-3">
-        <details className="rounded-xl border border-border bg-card" open={cards.length === 0}>
-          <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Wortliste importieren</summary>
+        <details className="rounded-card border border-border bg-card" open={cards.length === 0}>
+          <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Wortliste importieren</summary>
           <div className="border-t border-border p-4">
             <ImportForm deckId={deckId} />
           </div>
         </details>
-        <details className="rounded-xl border border-border bg-card">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Einzelnes Wort hinzufügen</summary>
+        <details className="rounded-card border border-border bg-card">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Einzelnes Wort hinzufügen</summary>
           <div className="border-t border-border p-4">
             <AddCardForm deckId={deckId} />
           </div>
@@ -80,10 +80,10 @@ export default async function DeckPage({ params }: PageProps<"/m/[moduleId]/voca
 
       {cards.length > 0 ? (
         <section className="mt-8" aria-labelledby="words">
-          <h2 id="words" className="mb-2 font-semibold">
+          <h2 id="words" className="heading mb-3">
             Wörter ({cards.length})
           </h2>
-          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          <ul className="divide-y divide-border rounded-card border border-border bg-card">
             {cards.map((c) => (
               <li key={c.id}>
                 <details>
@@ -92,7 +92,7 @@ export default async function DeckPage({ params }: PageProps<"/m/[moduleId]/voca
                       <span className="block truncate font-medium">{c.front_md}</span>
                       <span className="block truncate text-sm text-muted">{c.back_md}</span>
                     </span>
-                    <span className="shrink-0 text-xs text-muted">{c.due_at === null ? "neu" : isDue(c, now) ? "fällig" : "geplant"}</span>
+                    <span className="shrink-0 text-sm text-muted">{c.due_at === null ? "neu" : isDue(c, now) ? "fällig" : "geplant"}</span>
                   </summary>
                   <EditCardForm card={{ id: c.id, front_md: c.front_md, back_md: c.back_md, example: c.data?.example ?? null }} />
                   <form action={deleteCard} className="px-4 pb-3">

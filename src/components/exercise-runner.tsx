@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Minus, X } from "lucide-react";
 import { useActionState, useEffect, useState, type ReactNode } from "react";
 import { recordAttempt } from "@/app/actions/exercises";
 import { formatDuration } from "@/lib/exercises/stats";
@@ -8,10 +9,11 @@ import type { FormState } from "@/lib/form-state";
 import { Button, FormMessage } from "./ui";
 
 const initial: FormState = {};
+// always icon and word; the three answers are outlined, so the timer start stays the one primary button
 const RESULT_STYLE = {
-  correct: "border-success/50 text-success hover:bg-success/10",
-  partial: "border-border hover:bg-border/40",
-  wrong: "border-danger/50 text-danger hover:bg-danger/10",
+  correct: { cls: "border-success text-on-success-soft hover:bg-success-soft", Icon: Check },
+  partial: { cls: "border-control text-foreground hover:bg-accent-soft", Icon: Minus },
+  wrong: { cls: "border-danger text-danger hover:bg-danger-soft", Icon: X },
 } as const;
 
 /**
@@ -32,12 +34,12 @@ export function ExerciseRunner({ exerciseId, estimatedMinutes, children }: { exe
   const over = estimatedMinutes !== null && seconds > estimatedMinutes * 60;
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
-        <span role="timer" aria-label="Verstrichene Zeit" className={`text-2xl font-semibold tabular-nums ${over ? "text-danger" : ""}`}>
+      <div className="flex items-center justify-between gap-3 rounded-card border border-border bg-card p-4">
+        <span role="timer" aria-label="Verstrichene Zeit" className={`score ${over ? "text-accent-ink" : ""}`}>
           {formatDuration(seconds)}
         </span>
         <div className="flex gap-2">
-          <Button type="button" variant="secondary" onClick={() => setRunning((r) => !r)}>
+          <Button type="button" variant={running ? "secondary" : "primary"} onClick={() => setRunning((r) => !r)}>
             {running ? "Pause" : seconds > 0 ? "Weiter" : "Timer starten"}
           </Button>
           {seconds > 0 ? (
@@ -60,20 +62,24 @@ export function ExerciseRunner({ exerciseId, estimatedMinutes, children }: { exe
       <form action={action} className="space-y-2">
         <input type="hidden" name="exerciseId" value={exerciseId} />
         <input type="hidden" name="seconds" value={seconds > 0 ? seconds : ""} />
-        <p className="text-sm font-medium">Wie ist es gelaufen?</p>
+        <p className="font-bold">Wie ist es gelaufen?</p>
         <div className="grid grid-cols-3 gap-2">
-          {RESULTS.map((r) => (
+          {RESULTS.map((r) => {
+            const { cls, Icon } = RESULT_STYLE[r.id];
+            return (
             <button
               key={r.id}
               type="submit"
               name="result"
               value={r.id}
               disabled={pending}
-              className={`min-h-12 rounded-lg border bg-card px-2 text-sm font-medium transition-colors disabled:opacity-50 ${RESULT_STYLE[r.id]}`}
+              className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-pill border-2 bg-card px-2 text-sm font-bold leading-tight transition-colors duration-150 ease-out disabled:opacity-50 sm:flex-row sm:gap-2 sm:text-base ${cls}`}
             >
+              <Icon aria-hidden className="size-4" strokeWidth={3} />
               {r.label}
             </button>
-          ))}
+            );
+          })}
         </div>
         <FormMessage state={state} />
       </form>

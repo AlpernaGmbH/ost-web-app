@@ -19,7 +19,7 @@ export default async function NewExercisePage({ params }: PageProps<"/m/[moduleI
 
   return (
     <>
-      <Link href={`/m/${moduleId}?tab=uebungen`} className="mb-3 inline-block text-sm text-muted">
+      <Link href={`/m/${moduleId}?tab=uebungen`} className="mb-4 inline-flex min-h-9 items-center font-bold text-primary-ink">
         ← Übungen {module.name}
       </Link>
       <PageTitle title="Neue Aufgabe" />

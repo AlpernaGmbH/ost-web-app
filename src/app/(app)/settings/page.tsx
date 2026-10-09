@@ -58,7 +58,7 @@ export default async function SettingsPage() {
       <PageTitle title="Einstellungen" subtitle={user.email} />
 
       <section aria-labelledby="sem" className="space-y-3">
-        <h2 id="sem" className="font-semibold">Semester & Stundenplan</h2>
+        <h2 id="sem" className="heading">Semester & Stundenplan</h2>
         <Card className="space-y-6">
           <SemesterForm
             semester={{
@@ -78,18 +78,18 @@ export default async function SettingsPage() {
       </section>
 
       <section id="inbox" aria-labelledby="inbox-h" className="space-y-3">
-        <h2 id="inbox-h" className="font-semibold">Inbox: nicht eindeutig zugeordnete Termine ({inbox.length})</h2>
+        <h2 id="inbox-h" className="heading">Inbox: nicht eindeutig zugeordnete Termine ({inbox.length})</h2>
         {inbox.length === 0 ? (
           <Card>
             <p className="text-sm text-muted">Alle importierten Termine sind einem Modul zugeordnet.</p>
           </Card>
         ) : (
-          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          <ul className="divide-y divide-border rounded-card border border-border bg-card">
             {inbox.map((l) => (
               <li key={l.id} className="space-y-2 px-4 py-3">
                 <p className="text-sm">
                   <span className="font-medium">{l.title}</span>
-                  <span className="block text-xs text-muted">{formatDateTime(l.starts_at)}</span>
+                  <span className="block text-sm text-muted">{formatDateTime(l.starts_at)}</span>
                 </p>
                 <form action={assignLecture} className="flex gap-2">
                   <input type="hidden" name="lectureId" value={l.id} />
@@ -98,7 +98,7 @@ export default async function SettingsPage() {
                     required
                     defaultValue=""
                     aria-label={`Modul für ${l.title}`}
-                    className="min-h-11 min-w-0 flex-1 rounded-lg border border-border bg-card px-3"
+                    className="h-13 min-w-0 flex-1 rounded-field border-2 border-control bg-card px-4 text-lg hover:border-primary"
                   >
                     <option value="" disabled>
                       Modul wählen …
@@ -120,7 +120,7 @@ export default async function SettingsPage() {
       </section>
 
       <section aria-labelledby="mods" className="space-y-3">
-        <h2 id="mods" className="font-semibold">Module</h2>
+        <h2 id="mods" className="heading">Module</h2>
         <div className="space-y-3">
           {modules.filter((m) => m.kind !== "admin").map((m) => (
             <Card key={m.id}>

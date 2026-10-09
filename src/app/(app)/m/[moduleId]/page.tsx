@@ -4,6 +4,7 @@ import { deleteDocument } from "@/app/actions/documents";
 import { ConfirmButton } from "@/components/confirm-button";
 import { DeckForm, ImportUnitsForm, LectureForm, StarterSetForm } from "@/components/forms";
 import { ExercisesTab } from "@/components/exercises-tab";
+import { ModuleChip } from "@/components/module-chip";
 import { StudyForm } from "@/components/study-form";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
@@ -13,6 +14,7 @@ import { parseFilter } from "@/lib/exercises/stats";
 import type { DocumentRow, Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDay, formatSize, formatTime } from "@/lib/format";
 import { parseUuidOrNotFound } from "@/lib/ids";
+import { assignTones } from "@/lib/module-tone";
 import { createClient } from "@/lib/supabase/server";
 import { canUseChoice } from "@/lib/vocab/queue";
 import { isDue } from "@/lib/vocab/srs";
@@ -29,10 +31,14 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
   const supabase = await createClient();
   const { data: module } = await supabase
     .from("modules")
-    .select("id, code, name, ects, kind, color, semester_id")
+    .select("id, code, name, ects, kind, semester_id")
     .eq("id", moduleId)
-    .maybeSingle<Pick<Module, "id" | "code" | "name" | "ects" | "kind" | "color" | "semester_id">>();
+    .maybeSingle<Pick<Module, "id" | "code" | "name" | "ects" | "kind" | "semester_id">>();
   if (!module) notFound();
+
+  // the module's brand tone depends on its position among the semester's modules
+  const { data: siblings } = await supabase.from("modules").select("id, kind").eq("semester_id", module.semester_id).order("sort_order");
+  const tone = assignTones(siblings ?? []).get(module.id);
 
   const { data: semester } = await supabase
     .from("semesters")
@@ -58,19 +64,28 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
 
   return (
     <>
-      <Link href="/" className="mb-3 inline-block text-sm text-muted">
+      <Link href="/" className="mb-3 inline-block font-bold text-primary-ink">
         ← Module
       </Link>
-      <PageTitle title={module.name} subtitle={`${module.code}${module.ects > 0 ? ` · ${module.ects} ECTS` : ""}`} />
+      <PageTitle
+        title={module.name}
+        size="md"
+        subtitle={
+          <span className="flex items-center gap-3">
+            <ModuleChip code={module.code} tone={tone} />
+            {module.ects > 0 ? <span>{module.ects} ECTS</span> : null}
+          </span>
+        }
+      />
 
-      <div role="tablist" className={`mb-5 grid ${tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"} rounded-lg border border-border bg-card p-1 text-sm`}>
+      <div role="tablist" className={`mb-5 grid ${tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"} rounded-pill border border-border bg-card p-1 text-sm`}>
         {tabs.map((t) => (
           <Link
             key={t.id}
             href={t.href}
             role="tab"
             aria-selected={tab === t.id}
-            className={`flex min-h-10 items-center justify-center rounded-md ${tab === t.id ? "bg-primary text-primary-foreground" : ""}`}
+            className={`flex min-h-10 items-center justify-center rounded-pill font-bold ${tab === t.id ? "bg-primary text-primary-foreground" : ""}`}
           >
             {t.label}
           </Link>
@@ -133,7 +148,7 @@ async function Lectures({
       {weeks.map((week) => {
         const range = weekRange(startDate, week);
         return (
-          <details key={week} open={week >= currentWeek} className="group rounded-xl border border-border bg-card">
+          <details key={week} open={week >= currentWeek} className="group rounded-card border border-border bg-card">
             <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold">
               <span>
                 {formatWeek(week)}{" "}
@@ -141,12 +156,12 @@ async function Lectures({
                   {shortDate(range.monday)}–{shortDate(range.sunday)}
                 </span>
               </span>
-              {week === currentWeek ? <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs text-primary">aktuell</span> : null}
+              {week === currentWeek ? <span className="rounded-full bg-primary-soft px-2 py-0.5 text-sm text-on-primary-soft">aktuell</span> : null}
             </summary>
             <ul className="divide-y divide-border border-t border-border">
               {byWeek.get(week)!.map((l) => (
                 <li key={l.id}>
-                  <Link href={`/m/${moduleId}/l/${l.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-border/30">
+                  <Link href={`/m/${moduleId}/l/${l.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-sunken">
                     <span className="w-24 shrink-0 text-sm">
                       <span className="block font-medium">{formatDay(l.starts_at)}</span>
                       <span className="text-muted">
@@ -156,12 +171,12 @@ async function Lectures({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block truncate ${l.status === "cancelled" ? "text-muted line-through" : ""}`}>{l.title}</span>
-                      {l.location ? <span className="block truncate text-xs text-muted">{l.location}</span> : null}
+                      {l.location ? <span className="block truncate text-sm text-muted">{l.location}</span> : null}
                     </span>
                     {l.status === "cancelled" ? (
-                      <span className="shrink-0 text-xs text-danger">abgesagt</span>
+                      <span className="shrink-0 text-sm text-danger">abgesagt</span>
                     ) : withNote.has(l.id) ? (
-                      <span className="shrink-0 text-xs text-success">Notiz ✓</span>
+                      <span className="shrink-0 text-sm text-success">Notiz ✓</span>
                     ) : null}
                   </Link>
                 </li>
@@ -171,8 +186,8 @@ async function Lectures({
         );
       })}
 
-      <details className="rounded-xl border border-border bg-card">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Vorlesung manuell anlegen</summary>
+      <details className="rounded-card border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Vorlesung manuell anlegen</summary>
         <div className="border-t border-border p-4">
           <LectureForm moduleId={moduleId} today={today} />
         </div>
@@ -199,12 +214,12 @@ async function Documents({ moduleId, userId }: { moduleId: string; userId: strin
           <p className="text-sm text-muted">Noch keine Dokumente. Folien, Skripte und Übungen lassen sich hier ablegen (max. 50 MB pro Datei).</p>
         </Card>
       ) : (
-        <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+        <ul className="divide-y divide-border rounded-card border border-border bg-card">
           {documents.map((d) => (
             <li key={d.id} className="flex items-center gap-3 px-4 py-3">
               <a href={`/d/${d.id}`} target="_blank" rel="noopener" className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{d.filename}</span>
-                <span className="text-xs text-muted">
+                <span className="text-sm text-muted">
                   {formatSize(d.size_bytes)} · {formatDay(d.created_at)}
                   {d.lecture_id ? " · an Vorlesung angehängt" : ""}
                 </span>
@@ -275,14 +290,14 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
               <li key={deck.id}>
                 <Link
                   href={`/m/${moduleId}/vocab/${deck.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-border/30"
+                  className="flex items-center justify-between gap-3 rounded-card border border-border bg-card p-4 transition-colors hover:bg-sunken"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{deck.name}</span>
                     <span className="text-sm text-muted">{s.total} Wörter</span>
                   </span>
                   {s.due > 0 ? (
-                    <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-sm font-medium text-primary">{s.due} fällig</span>
+                    <span className="shrink-0 rounded-full bg-primary-soft px-3 py-1 text-sm font-medium text-on-primary-soft">{s.due} fällig</span>
                   ) : (
                     <span className="shrink-0 text-sm text-muted">{s.total > 0 ? "alles erledigt" : "leer"}</span>
                   )}
@@ -295,7 +310,7 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
 
       {totalWords > 0 ? (
         <section aria-labelledby="all-words" className="space-y-3 pt-2">
-          <h2 id="all-words" className="font-semibold">
+          <h2 id="all-words" className="heading">
             Alle Listen zusammen lernen
           </h2>
           <p className="text-sm text-muted">
@@ -309,22 +324,22 @@ async function VocabTab({ moduleId }: { moduleId: string }) {
         </section>
       ) : null}
 
-      <details className="rounded-xl border border-border bg-card" open={decks.length === 0}>
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Vorlage: EPC1 Units 1–5 importieren</summary>
+      <details className="rounded-card border border-border bg-card" open={decks.length === 0}>
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Vorlage: EPC1 Units 1–5 importieren</summary>
         <div className="border-t border-border p-4">
           <StarterSetForm moduleId={moduleId} />
         </div>
       </details>
 
-      <details className="rounded-xl border border-border bg-card">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Eigene Listen einfügen (mehrere auf einmal)</summary>
+      <details className="rounded-card border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Eigene Listen einfügen (mehrere auf einmal)</summary>
         <div className="border-t border-border p-4">
           <ImportUnitsForm moduleId={moduleId} />
         </div>
       </details>
 
-      <details className="rounded-xl border border-border bg-card">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Neue leere Wortliste</summary>
+      <details className="rounded-card border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Neue leere Wortliste</summary>
         <div className="border-t border-border p-4">
           <DeckForm moduleId={moduleId} />
         </div>

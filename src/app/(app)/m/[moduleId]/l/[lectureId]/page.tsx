@@ -44,11 +44,11 @@ export default async function LecturePage({ params }: PageProps<"/m/[moduleId]/l
 
   return (
     <>
-      <Link href={`/m/${moduleId}`} className="mb-3 inline-block text-sm text-muted">
+      <Link href={`/m/${moduleId}`} className="mb-4 inline-flex min-h-9 items-center font-bold text-primary-ink">
         ← {moduleRes.data.name}
       </Link>
       <header className="mb-5">
-        <h1 className="text-2xl font-bold tracking-tight">{lecture.title}</h1>
+        <h1 className="display-md break-words">{lecture.title}</h1>
         <p className="mt-1 text-sm text-muted">
           {formatWeek(week)} · {formatDay(lecture.starts_at)} {formatTime(lecture.starts_at)}
           {lecture.ends_at ? `–${formatTime(lecture.ends_at)}` : ""}
@@ -64,12 +64,12 @@ export default async function LecturePage({ params }: PageProps<"/m/[moduleId]/l
           Dokumente zu dieser Vorlesung
         </h2>
         {documents.length > 0 ? (
-          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          <ul className="divide-y divide-border rounded-card border border-border bg-card">
             {documents.map((d) => (
               <li key={d.id} className="flex items-center gap-3 px-4 py-3">
                 <a href={`/d/${d.id}`} target="_blank" rel="noopener" className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{d.filename}</span>
-                  <span className="text-xs text-muted">{formatSize(d.size_bytes)}</span>
+                  <span className="text-sm text-muted">{formatSize(d.size_bytes)}</span>
                 </a>
                 <form action={deleteDocument}>
                   <input type="hidden" name="id" value={d.id} />

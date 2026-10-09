@@ -1,57 +1,32 @@
 "use client";
 
+import { BookOpen, CalendarDays, PenLine, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const PRACTICE = /^\/m\/[^/]+\/(ex|vocab)\//;
+
 const items = [
-  {
-    href: "/",
-    label: "Module",
-    active: (p: string) => p === "/" || (p.startsWith("/m/") && !/^\/m\/[^/]+\/(ex|vocab)\//.test(p)),
-    icon: "M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2V5Zm2 0v11.17A4 4 0 0 1 6 16h10V5H6Z",
-  },
-  {
-    href: "/ueben",
-    label: "Üben",
-    active: (p: string) => p.startsWith("/ueben") || /^\/m\/[^/]+\/(ex|vocab)\//.test(p),
-    icon: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.4-4-4 1.4-1.4 2.6 2.6 5-5 1.4 1.4-6.4 6.4Z",
-  },
-  {
-    href: "/stundenplan",
-    label: "Plan",
-    active: (p: string) => p.startsWith("/stundenplan"),
-    icon: "M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm12 8H5v10h14V10ZM5 8h14V6H5v2Z",
-  },
-  {
-    href: "/settings",
-    label: "Einstellungen",
-    active: (p: string) => p.startsWith("/settings"),
-    icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8.1-2.5-.9.5v2.2l-1.9 1.1-1-.6-1.9 1.1V18.5L12 20l-2.4-1.2v-1.2l-1.9-1.1-1 .6-1.9-1.1v-2.2l-.9-.5V9.6l.9-.5V6.9l1.9-1.1 1 .6 1.9-1.1V4L12 2.8 14.4 4v1.3l1.9 1.1 1-.6 1.9 1.1v2.2l.9.5v3Z",
-  },
+  { href: "/", label: "Module", Icon: BookOpen, active: (p: string) => p === "/" || (p.startsWith("/m/") && !PRACTICE.test(p)) },
+  { href: "/ueben", label: "Üben", Icon: PenLine, active: (p: string) => p.startsWith("/ueben") || PRACTICE.test(p) },
+  { href: "/stundenplan", label: "Plan", Icon: CalendarDays, active: (p: string) => p.startsWith("/stundenplan") },
+  { href: "/settings", label: "Einstellungen", Icon: Settings, active: (p: string) => p.startsWith("/settings") },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav
-      aria-label="Hauptnavigation"
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-card/95 backdrop-blur"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
+    <nav aria-label="Hauptnavigation" className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-card" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <ul className="mx-auto flex max-w-2xl">
-        {items.map((item) => {
-          const active = item.active(pathname);
+        {items.map(({ href, label, Icon, active }) => {
+          const current = active(pathname);
           return (
-            <li key={item.href} className="flex-1">
-              <Link
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs ${active ? "font-semibold text-primary" : "text-muted"}`}
-              >
-                <svg viewBox="0 0 24 24" className="size-6" fill="currentColor" aria-hidden>
-                  <path d={item.icon} />
-                </svg>
-                {item.label}
+            <li key={href} className="flex-1">
+              <Link href={href} aria-current={current ? "page" : undefined} className="flex min-h-16 flex-col items-center justify-center gap-1 text-[13px]">
+                <span className={`flex h-8 w-16 items-center justify-center rounded-pill transition-colors duration-150 ease-out ${current ? "bg-primary-soft text-on-primary-soft" : "text-muted"}`}>
+                  <Icon aria-hidden className="size-6" strokeWidth={2} />
+                </span>
+                <span className={current ? "font-bold text-foreground" : "text-muted"}>{label}</span>
               </Link>
             </li>
           );

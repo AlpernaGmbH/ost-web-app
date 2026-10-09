@@ -1,19 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import "@fontsource-variable/bricolage-grotesque/opsz.css";
+import "@fontsource-variable/source-sans-3/index.css";
+import "@fontsource-variable/jetbrains-mono/index.css";
 import "katex/dist/katex.min.css";
+import "./tokens.css";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: { default: "Lern-App", template: "%s · Lern-App" },
-  description: "Lernen für das BSc Betriebsökonomie an der OST",
-  appleWebApp: { capable: true, title: "Lern-App", statusBarStyle: "default" },
+  title: { default: "Pensum", template: "%s · Pensum" },
+  description: "Üben, bis es sitzt.",
+  appleWebApp: { capable: true, title: "Pensum", statusBarStyle: "default" },
   robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4f46e5",
+  // browser bar follows the page color of the active theme (surface-100)
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f6f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1a1f" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -21,7 +26,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="de-CH" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="de-CH" className="h-full antialiased">
       <body className="min-h-full">{children}</body>
     </html>
   );

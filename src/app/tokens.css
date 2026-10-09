@@ -1,0 +1,137 @@
+/*
+ * Pensum design tokens. Source: "Pensum Corporate Design" (PDF, 9 Oct 2026).
+ * Light is the default, dark follows the system (prefers-color-scheme).
+ * Values marked "derived" are not in the PDF: they were chosen here and checked for >= 4.5:1 text contrast
+ * (>= 3:1 for borders and focus), the same rule the PDF sets for itself.
+ * Colors, radii, spacing and fonts are only ever used through these variables. Shape, spacing, font and shadow tokens carry a "pn-" prefix so they cannot collide with Tailwind's own theme variables.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* brand */
+  --primary: #0b6e6e;
+  --primary-ink: #0b6e6e;
+  --primary-soft: #d9eeec;
+  --accent: #ffb020;
+  --accent-ink: #8a5200;
+  --accent-soft: #fff0d1;
+  --brand-deep: #0b3b42;
+
+  /* neutrals */
+  --surface-100: #f3f6f6;
+  --surface-raised: #ffffff;
+  --surface-200: #e6ecec;
+  --ink: #14232a;
+  --ink-muted: #4c5f66;
+  --border-control: #788d92;
+  --hairline: #d3dcdc;
+
+  /* feedback: always paired with icon and word */
+  --success: #1b7f4b;
+  --success-soft: #e0f3e7;
+  --error: #b73a1c;
+  --error-soft: #fce7e0;
+
+  /* module colors: soft surface + matching ink */
+  --mod-1: #d9eeec;
+  --mod-1-ink: #08474a;
+  --mod-2: #fff0d1;
+  --mod-2-ink: #5c3700;
+  --mod-3: #ffe0d6;
+  --mod-3-ink: #7a2410;
+  --mod-4: #dcebfa;
+  --mod-4-ink: #174a7c;
+  --mod-5: #f6e0ec;
+  --mod-5-ink: #7a1f4e;
+  --mod-6: #e5efd2;
+  --mod-6-ink: #3c5a12;
+
+  /* derived */
+  --on-primary: #ffffff;
+  --primary-press: #095a5a;
+  --on-primary-soft: #08474a;
+  --on-accent: #14232a;
+  --on-accent-soft: #8a5200;
+  --on-brand-deep: #f3f6f6;
+  --on-success-soft: #166b3e; /* the PDF's success green on its soft surface is 4.3:1; this one is 5.7:1 */
+  --on-error-soft: #b73a1c;
+  --focus: #14232a;
+  --pn-shadow-card: 0 4px 16px rgb(20 35 42 / 0.1);
+  --pn-shadow-lift: 0 12px 32px rgb(20 35 42 / 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --primary: #46c2bb;
+    --primary-ink: #5fd0c9;
+    --primary-soft: #12383a;
+    --accent: #ffb84d;
+    --accent-ink: #ffc970;
+    --accent-soft: #3a2c0e;
+    --brand-deep: #1f6f6e;
+
+    --surface-100: #0f1a1f;
+    --surface-raised: #1c2d35;
+    --surface-200: #16242b;
+    --ink: #e8efef;
+    --ink-muted: #a2b5bb;
+    --border-control: #5e7881;
+    --hairline: #2c4048;
+
+    --success: #5fd08f;
+    --success-soft: #12301f;
+    --error: #ff9a7e;
+    --error-soft: #3a1a12;
+
+    --mod-1: #12383a;
+    --mod-1-ink: #a5e6e1;
+    --mod-2: #3a2c0e;
+    --mod-2-ink: #ffd98a;
+    --mod-3: #3f1d14;
+    --mod-3-ink: #ffc1ac;
+    --mod-4: #15304a;
+    --mod-4-ink: #b5d5f5;
+    --mod-5: #3f1830;
+    --mod-5-ink: #f5b9da;
+    --mod-6: #26331a;
+    --mod-6-ink: #c9e3a0;
+
+    --on-primary: #0f1a1f;
+    --primary-press: #62d0c9;
+    --on-primary-soft: #a5e6e1;
+    --on-accent: #0f1a1f;
+    --on-accent-soft: #ffc970;
+    --on-brand-deep: #f3f6f6;
+    --on-success-soft: #5fd08f;
+    --on-error-soft: #ff9a7e;
+    --focus: #e8efef;
+    --pn-shadow-card: 0 4px 16px rgb(0 0 0 / 0.35);
+    --pn-shadow-lift: 0 12px 32px rgb(0 0 0 / 0.5);
+  }
+}
+
+:root {
+  /* shape: pill for actions, 16 for fields and messages, 24 for cards, 10 for small tags */
+  --pn-radius-pill: 999px;
+  --pn-radius-field: 16px;
+  --pn-radius-card: 24px;
+  --pn-radius-tag: 10px;
+
+  /* spacing on the 8 px grid */
+  --pn-space-1: 4px;
+  --pn-space-2: 8px;
+  --pn-space-3: 12px;
+  --pn-space-4: 16px;
+  --pn-space-5: 24px;
+  --pn-space-6: 32px;
+  --pn-space-7: 48px;
+  --pn-space-8: 64px;
+
+  /* fonts: headings, text, numbers and formulas (self-hosted via @fontsource, see layout.tsx) */
+  --pn-font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Noto Sans", system-ui, sans-serif;
+  --pn-font-text: "Source Sans 3 Variable", "Source Sans 3", "Noto Sans", system-ui, sans-serif;
+  --pn-font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+}

@@ -60,27 +60,27 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
         </Card>
       ) : (
         <>
-          <Card className="space-y-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="font-semibold">
-                {summary.correct} von {summary.total} gelöst
+          <Card className="space-y-4">
+            <div className="space-y-1">
+              <p className="heading">
+                {summary.correct} von {summary.total} sitzen
               </p>
-              <p className="text-xs text-muted">
-                {summary.partial} teilweise · {summary.wrong} falsch · {summary.untried} neu
+              <p className="small tabular-nums text-muted">
+                {summary.partial} teilweise · {summary.wrong} nicht ganz · {summary.untried} neu
               </p>
             </div>
             <ProgressBar summary={summary} />
             {nextOpen ? (
               <Link href={`/m/${moduleId}/ex/${nextOpen.id}`} className={buttonClass("primary", "w-full")}>
-                Weiter mit der nächsten offenen Aufgabe →
+                Weiter üben
               </Link>
             ) : (
-              <p className="text-sm text-success">Alles gelöst in dieser Auswahl.</p>
+              <p className="font-bold text-success">Alles gelöst in dieser Auswahl.</p>
             )}
           </Card>
 
           <div className="space-y-2">
-            <nav aria-label="Gruppieren" className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1 text-sm">
+            <nav aria-label="Gruppieren" className="grid grid-cols-2 gap-1 rounded-pill border border-border bg-card p-1 text-sm">
               {(
                 [
                   ["source", "Nach Test / Blatt"],
@@ -91,21 +91,21 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
                   key={id}
                   href={tabHref(moduleId, filter, id)}
                   aria-current={group === id ? "page" : undefined}
-                  className={`inline-flex min-h-10 items-center justify-center rounded-lg font-medium ${group === id ? "bg-primary text-primary-foreground" : "hover:bg-border/40"}`}
+                  className={`inline-flex min-h-10 items-center justify-center rounded-pill font-bold ${group === id ? "bg-primary text-primary-foreground" : "hover:bg-sunken"}`}
                 >
                   {label}
                 </Link>
               ))}
             </nav>
 
-            <details className="rounded-xl border border-border bg-card" open={activeFilters > 0}>
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-sm font-medium">
-                <span>Filter</span>
-                <span className="text-xs text-muted">{activeFilters > 0 ? `${activeFilters} aktiv` : "Hilfsmittel, nur offene"}</span>
+            <details className="rounded-card border border-border bg-card" open={activeFilters > 0}>
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4">
+                <span className="font-bold">Filter</span>
+                <span className="text-sm text-muted">{activeFilters > 0 ? `${activeFilters} aktiv` : "Hilfsmittel, nur offene"}</span>
               </summary>
               <div className="space-y-3 border-t border-border p-4">
                 <div>
-                  <p className="mb-2 text-xs text-muted">Erlaubte Hilfsmittel</p>
+                  <p className="mb-2 text-sm text-muted">Erlaubte Hilfsmittel</p>
                   <div className="flex flex-wrap gap-2">
                     <Link href={tabHref(moduleId, { ...filter, aid: null }, group)} className={pill(filter.aid === null)}>
                       Alle
@@ -127,7 +127,7 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
                     </Link>
                   ) : null}
                   {activeFilters > 0 ? (
-                    <Link href={tabHref(moduleId, { topic: null, aid: null, show: "all" }, group)} className="inline-flex min-h-9 items-center px-2 text-sm text-primary">
+                    <Link href={tabHref(moduleId, { topic: null, aid: null, show: "all" }, group)} className="inline-flex min-h-9 items-center px-2 text-sm text-primary-ink">
                       Filter zurücksetzen
                     </Link>
                   ) : null}
@@ -143,12 +143,12 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
           ) : (
             <div className="space-y-3">
               {groups.map((g) => (
-                <details key={g.key} open={groups.length <= 3 || g.key === firstWithWork} className="overflow-hidden rounded-xl border border-border bg-card">
-                  <summary className="cursor-pointer list-none px-4 py-3">
+                <details key={g.key} open={groups.length <= 3 || g.key === firstWithWork} className="overflow-hidden rounded-card border border-border bg-card">
+                  <summary className="cursor-pointer list-none px-4 py-4">
                     <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-semibold">{g.title}</span>
-                      <span className="shrink-0 text-xs text-muted">
-                        {g.summary.correct}/{g.summary.total} gelöst
+                      <span className="heading">{g.title}</span>
+                      <span className="num shrink-0 text-sm text-muted">
+                        {g.summary.correct}/{g.summary.total}
                       </span>
                     </span>
                     <ProgressBar summary={g.summary} className="mt-2" />
@@ -158,11 +158,11 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
                       const ref = [group === "topic" ? names.get(row.source_label) : null, row.source_ref].filter(Boolean).join(" · ");
                       return (
                         <li key={row.id}>
-                          <Link href={`/m/${moduleId}/ex/${row.id}`} className="flex items-start gap-3 px-4 py-3 hover:bg-border/30">
+                          <Link href={`/m/${moduleId}/ex/${row.id}`} className="flex items-start gap-3 px-4 py-3 hover:bg-sunken">
                             <span className="min-w-0 flex-1">
-                              {ref ? <span className="block text-xs text-muted">{ref}</span> : null}
-                              <span className="line-clamp-2 break-words font-medium">{row.title}</span>
-                              <span className="block text-xs text-muted">{metaLine(row)}</span>
+                              {ref ? <span className="block text-sm text-muted">{ref}</span> : null}
+                              <span className="line-clamp-2 break-words font-semibold">{row.title}</span>
+                              <span className="block text-sm text-muted">{metaLine(row)}</span>
                             </span>
                             <ResultBadge result={latestResult(row)} />
                           </Link>
@@ -181,8 +181,8 @@ export function ExerciseList({ moduleId, moduleCode, filter, group, all }: { mod
         + Aufgabe von Hand anlegen
       </Link>
 
-      <details className="rounded-xl border border-border bg-card">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 text-sm font-semibold">+ Übungsdatei importieren (selten nötig)</summary>
+      <details className="rounded-card border border-border bg-card">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center px-4 font-bold text-primary-ink">+ Übungsdatei importieren (selten nötig)</summary>
         <div className="border-t border-border p-4">
           <ExerciseImportForm moduleId={moduleId} moduleCode={moduleCode} />
         </div>

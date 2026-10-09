@@ -1,42 +1,42 @@
+import { X } from "lucide-react";
 import Link from "next/link";
 import type { AgendaDay, AgendaItem } from "@/lib/agenda";
 import { formatTime } from "@/lib/format";
+import { ModuleChip } from "./module-chip";
 
-/** `admin` marks the Administration module: its events are shown by title, since "ADM" says nothing. */
-export type AgendaModule = { code: string; color: string; admin?: boolean };
+/** `tone` is the module's brand tone (see module-tone.ts); `admin` marks the Administration module: its events are shown by title. */
+export type AgendaModule = { code: string; tone: number; admin?: boolean };
+
+const tag = "inline-flex h-7 shrink-0 items-center gap-1.5 rounded-pill px-3 text-[13px] font-bold leading-none";
 
 function Entry({ item, module }: { item: AgendaItem; module: AgendaModule | undefined }) {
   const cancelled = item.status === "cancelled";
   const body = (
     <>
-      <span className="w-14 shrink-0 text-sm tabular-nums">
-        <span className="block font-medium">{formatTime(item.starts_at)}</span>
+      <span className="num w-16 shrink-0 text-sm">
+        <span className="block font-semibold">{formatTime(item.starts_at)}</span>
         {item.ends_at ? <span className="text-muted">{formatTime(item.ends_at)}</span> : null}
       </span>
-      <span className="min-w-0 flex-1">
-        <span className={`line-clamp-2 break-words ${cancelled ? "text-muted line-through" : ""}`}>{item.title}</span>
-        <span className="flex items-center gap-2 text-xs text-muted">
-          {module ? (
-            <span className="inline-flex items-center gap-1">
-              <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: module.color }} />
-              {module.code}
-            </span>
-          ) : (
-            <span>ohne Fach</span>
-          )}
-          {item.location ? <span className="truncate">· {item.location}</span> : null}
+      <span className="min-w-0 flex-1 space-y-1.5">
+        <span className={`line-clamp-2 break-words font-semibold ${cancelled ? "text-muted line-through" : ""}`}>{item.title}</span>
+        <span className="flex flex-wrap items-center gap-2 text-sm text-muted">
+          {module ? <ModuleChip code={module.code} tone={module.tone} /> : <span>ohne Fach</span>}
+          {item.location ? <span className="truncate">{item.location}</span> : null}
         </span>
       </span>
       {cancelled ? (
-        <span className="shrink-0 text-xs text-danger">abgesagt</span>
+        <span className={`${tag} bg-danger-soft text-on-danger-soft`}>
+          <X aria-hidden className="size-3.5" strokeWidth={3} />
+          Abgesagt
+        </span>
       ) : item.ongoing ? (
-        <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">läuft</span>
+        <span className={`${tag} bg-primary-soft text-on-primary-soft`}>Läuft</span>
       ) : null}
     </>
   );
-  const className = `flex items-center gap-3 px-4 py-3 ${item.past && !item.ongoing ? "opacity-60" : ""}`;
+  const className = `flex items-start gap-3 px-4 py-4 ${item.past && !item.ongoing ? "opacity-60" : ""}`;
   return item.module_id ? (
-    <Link href={`/m/${item.module_id}/l/${item.id}`} className={`${className} hover:bg-border/30`}>
+    <Link href={`/m/${item.module_id}/l/${item.id}`} className={`${className} hover:bg-sunken`}>
       {body}
     </Link>
   ) : (
@@ -48,18 +48,18 @@ function Entry({ item, module }: { item: AgendaItem; module: AgendaModule | unde
 export function AgendaView({ days, modules, showEmptyDays = false }: { days: AgendaDay[]; modules: Map<string, AgendaModule>; showEmptyDays?: boolean }) {
   const visible = showEmptyDays ? days : days.filter((d) => d.items.length > 0 || d.isToday);
   if (visible.length === 0) {
-    return <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted">In dieser Woche stehen keine Termine im Stundenplan.</p>;
+    return <p className="rounded-card border border-border bg-card p-6 text-muted">Diese Woche stehen keine Termine im Stundenplan.</p>;
   }
   return (
     <div className="space-y-4">
       {visible.map((day) => (
-        <section key={day.date} aria-label={day.label} className={`overflow-hidden rounded-xl border bg-card ${day.isToday ? "border-primary" : "border-border"}`}>
-          <h2 className="flex items-center justify-between border-b border-border px-4 py-2 text-sm font-semibold">
+        <section key={day.date} aria-label={day.label} className={`overflow-hidden rounded-card border bg-card ${day.isToday ? "border-primary" : "border-border"}`}>
+          <h2 className="heading flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <span>{day.label}</span>
-            {day.isToday ? <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">Heute</span> : null}
+            {day.isToday ? <span className={`${tag} bg-primary text-primary-foreground`}>Heute</span> : null}
           </h2>
           {day.items.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-muted">Keine Termine.</p>
+            <p className="px-4 py-4 text-muted">Keine Termine.</p>
           ) : (
             <ul className="divide-y divide-border">
               {day.items.map((item) => (

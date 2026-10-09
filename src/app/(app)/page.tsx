@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { AgendaView } from "@/components/agenda";
 import { BootstrapForm } from "@/components/forms";
+import { ModuleChip } from "@/components/module-chip";
 import { Card, PageTitle } from "@/components/ui";
 import { groupWeek, type AgendaLecture } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import type { Lecture, Module, Semester } from "@/lib/db/types";
 import { formatDateTime } from "@/lib/format";
+import { assignTones } from "@/lib/module-tone";
 import { isDue } from "@/lib/vocab/srs";
 import { createClient } from "@/lib/supabase/server";
 import { addDays, mondayOf, weekNumber, zurichDate, zurichInstant } from "@/lib/week";
@@ -53,10 +55,10 @@ export default async function HomePage() {
   const [modulesRes, upcomingRes, inboxRes, todayRes, nextRes] = await Promise.all([
     supabase
       .from("modules")
-      .select("id, code, name, ects, kind, color")
+      .select("id, code, name, ects, kind")
       .eq("semester_id", semester.id)
       .order("sort_order")
-      .returns<Pick<Module, "id" | "code" | "name" | "ects" | "kind" | "color">[]>(),
+      .returns<Pick<Module, "id" | "code" | "name" | "ects" | "kind">[]>(),
     supabase
       .from("lectures")
       .select("id, module_id, title, starts_at")
@@ -117,7 +119,8 @@ export default async function HomePage() {
     }
   }
   const todayDay = groupWeek(mondayOf(today), todayRes.data ?? [], now).filter((d) => d.isToday);
-  const agendaModules = new Map(modules.map((m) => [m.id, { code: m.code, color: m.color }]));
+  const tones = assignTones(modules);
+  const agendaModules = new Map(modules.map((m) => [m.id, { code: m.code, tone: tones.get(m.id) ?? 0, admin: m.kind === "admin" }]));
   const nextEvent = nextRes.data?.[0];
   const hasLeftToday = (todayRes.data ?? []).some((l) => l.status === "scheduled" && Date.parse(l.ends_at ?? l.starts_at) > now.getTime());
   const week = weekNumber(semester.start_date, now);
@@ -130,57 +133,49 @@ export default async function HomePage() {
         subtitle={week >= 1 ? `${semester.name} · Woche ${String(week).padStart(2, "0")}` : `${semester.name} · beginnt am ${semester.start_date}`}
       />
 
-      <section aria-labelledby="today-h" className="mb-5 space-y-2">
+      <section aria-labelledby="today-h" className="mb-6 space-y-3">
         <div className="flex items-baseline justify-between">
-          <h2 id="today-h" className="font-semibold">
+          <h2 id="today-h" className="display-md">
             Heute
           </h2>
-          <Link href="/stundenplan" className="text-sm text-primary">
+          <Link href="/stundenplan" className="font-bold text-primary-ink">
             Stundenplan →
           </Link>
         </div>
         <AgendaView days={todayDay} modules={agendaModules} />
         {!hasLeftToday && nextEvent ? (
-          <p className="text-sm text-muted">
+          <p className="text-muted">
             Nächster Termin: {formatDateTime(nextEvent.starts_at)} · {nextEvent.title}
           </p>
         ) : null}
       </section>
 
       {inboxCount > 0 ? (
-        <Link href="/settings#inbox" className="mb-4 block rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
+        <Link href="/settings#inbox" className="mb-4 block rounded-field bg-primary-soft p-4 text-on-primary-soft">
           {inboxCount} importierte {inboxCount === 1 ? "Termin ist" : "Termine sind"} keinem Modul zugeordnet →
         </Link>
       ) : null}
 
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {modules.map((m) => {
           const next = nextByModule.get(m.id);
           const vocab = vocabStats.get(m.id);
           return (
             <li key={m.id}>
-              <Link
-                href={`/m/${m.id}`}
-                className="flex overflow-hidden rounded-xl border border-border bg-card transition-colors hover:bg-border/30"
-              >
-                <span aria-hidden className="w-1.5 shrink-0" style={{ backgroundColor: m.color }} />
-                <span className="min-w-0 flex-1 p-4">
-                  <span className="flex items-baseline justify-between gap-2">
-                    <span className="truncate font-semibold">{m.name}</span>
-                    <span className="shrink-0 text-xs text-muted">
-                      {m.code}
-                      {m.ects > 0 ? ` · ${m.ects} ECTS` : ""}
-                    </span>
-                  </span>
-                  <span className="mt-1 block text-sm text-muted">
-                    {vocab && vocab.total > 0
-                      ? `${vocab.due} von ${vocab.total} Wörtern zu üben`
-                      : next
-                        ? `${m.kind === "admin" ? "Nächster Termin" : "Nächste Vorlesung"}: ${formatDateTime(next.starts_at)}`
-                        : m.kind === "admin"
-                          ? "Kein kommender Termin"
-                          : "Keine kommende Vorlesung"}
-                  </span>
+              <Link href={`/m/${m.id}`} className="block rounded-card border border-border bg-card p-6 transition-colors duration-150 hover:bg-sunken">
+                <span className="flex items-start justify-between gap-3">
+                  <span className="heading min-w-0">{m.name}</span>
+                  <ModuleChip code={m.code} tone={tones.get(m.id)} />
+                </span>
+                <span className="mt-2 block text-muted">
+                  {m.ects > 0 ? `${m.ects} ECTS · ` : ""}
+                  {vocab && vocab.total > 0
+                    ? `${vocab.due} von ${vocab.total} Wörtern zu üben`
+                    : next
+                      ? `${m.kind === "admin" ? "Nächster Termin" : "Nächste Vorlesung"}: ${formatDateTime(next.starts_at)}`
+                      : m.kind === "admin"
+                        ? "Kein kommender Termin"
+                        : "Keine kommende Vorlesung"}
                 </span>
               </Link>
             </li>

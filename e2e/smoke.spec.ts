@@ -34,7 +34,7 @@ test.describe("access control", () => {
 test.describe("login page (mobile)", () => {
   test("renders a usable form without horizontal scroll", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: "Lern-App" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pensum" })).toBeVisible();
     await expect(page.getByLabel("E-Mail")).toBeVisible();
     await expect(page.getByLabel("Passwort")).toBeVisible();
     await expect(page.getByRole("button", { name: "Anmelden" })).toBeVisible();

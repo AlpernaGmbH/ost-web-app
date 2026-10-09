@@ -178,7 +178,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
         Beispielsatz (optional)
         <input name="example" maxLength={500} className={`${inputClass} mt-1`} />
       </label>
-      <p className="text-xs text-muted">Die Bedeutung ist eine Übersetzung oder eine Definition. Mehrere Bedeutungen mit „;“ trennen, z. B. „rennen; laufen“.</p>
+      <p className="text-sm text-muted">Die Bedeutung ist eine Übersetzung oder eine Definition. Mehrere Bedeutungen mit „;“ trennen, z. B. „rennen; laufen“.</p>
       <FormMessage state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? "Speichert …" : "Wort hinzufügen"}
@@ -199,10 +199,10 @@ export function ImportForm({ deckId }: { deckId: string }) {
           required
           rows={8}
           placeholder={"to run - rennen\nachieve | to complete successfully | She achieved her goal.\nhouse = Haus"}
-          className="mt-1 w-full rounded-lg border border-border bg-card p-3 font-mono text-[15px] focus:outline-2 focus:outline-primary"
+          className="mt-1 w-full rounded-field border-2 border-control bg-card p-4 font-mono text-[15px] hover:border-primary"
         />
       </label>
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Ein Wort pro Zeile: <code>Begriff | Bedeutung | Beispielsatz</code> (Beispielsatz optional). Als Trennzeichen gehen Tab, „ | “, „ - “, „;“,
         „=“ oder „ : “. Bereits vorhandene Wörter werden übersprungen.
       </p>
@@ -250,10 +250,10 @@ export function ImportUnitsForm({ moduleId }: { moduleId: string }) {
           required
           rows={10}
           placeholder={"## Unit 1 – Goal-setting\n(to) accomplish | to achieve or complete successfully | She accomplished it.\n\n## Unit 2 – Teamwork\n(to) collaborate | to work jointly with others"}
-          className="mt-1 w-full rounded-lg border border-border bg-card p-3 font-mono text-[15px] focus:outline-2 focus:outline-primary"
+          className="mt-1 w-full rounded-field border-2 border-control bg-card p-4 font-mono text-[15px] hover:border-primary"
         />
       </label>
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Jede Liste beginnt mit einer Zeile <code>## Name</code>, darunter ein Wort pro Zeile (<code>Begriff | Bedeutung | Beispielsatz</code>).
         Listen mit gleichem Namen werden wiederverwendet, vorhandene Wörter übersprungen: Du kannst den Import gefahrlos wiederholen.
       </p>

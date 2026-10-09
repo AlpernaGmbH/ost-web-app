@@ -4,10 +4,9 @@ import { useActionState } from "react";
 import { importExercises, saveExercise } from "@/app/actions/exercises";
 import { AIDS, DIFFICULTIES, KINDS, SOLUTION_SOURCES, type ExerciseRow } from "@/lib/exercises/types";
 import type { FormState } from "@/lib/form-state";
-import { Button, FormMessage, inputClass } from "./ui";
+import { Button, FormMessage, inputClass, textareaClass } from "./ui";
 
 const initial: FormState = {};
-const textareaClass = "mt-1 w-full rounded-lg border border-border bg-card p-3 text-base placeholder:text-muted focus:outline-2 focus:outline-primary";
 
 /** Create (no `exercise`) or edit an exercise. A successful save redirects to the exercise page. */
 export function ExerciseForm({ moduleId, exercise, topics }: { moduleId: string; exercise?: ExerciseRow; topics: string[] }) {
@@ -42,14 +41,14 @@ export function ExerciseForm({ moduleId, exercise, topics }: { moduleId: string;
       </label>
       <label className="block text-sm">
         Aufgabe (Markdown, Formeln mit $…$)
-        <textarea name="task" required rows={8} maxLength={10000} defaultValue={exercise?.task_md} className={`${textareaClass} font-mono`} />
+        <textarea name="task" required rows={8} maxLength={10000} defaultValue={exercise?.task_md} className={`${textareaClass} mt-1 font-mono`} />
       </label>
 
       <fieldset className="space-y-2">
         <legend className="text-sm">Erlaubte Hilfsmittel</legend>
         <div className="grid grid-cols-2 gap-2">
           {AIDS.map((aid) => (
-            <label key={aid.id} className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm">
+            <label key={aid.id} className="flex min-h-12 items-center gap-3 rounded-field border-2 border-control bg-card px-4 text-base">
               <input type="checkbox" name="aids" value={aid.id} defaultChecked={exercise?.aids.includes(aid.id)} className="size-5" />
               {aid.label}
             </label>
@@ -96,7 +95,7 @@ export function ExerciseForm({ moduleId, exercise, topics }: { moduleId: string;
 
       <label className="block text-sm">
         Lösung (optional, Markdown)
-        <textarea name="solution" rows={6} maxLength={10000} defaultValue={exercise?.solution_md ?? ""} className={`${textareaClass} font-mono`} />
+        <textarea name="solution" rows={6} maxLength={10000} defaultValue={exercise?.solution_md ?? ""} className={`${textareaClass} mt-1 font-mono`} />
       </label>
       <label className="block text-sm">
         Herkunft der Lösung
@@ -129,9 +128,9 @@ export function ExerciseImportForm({ moduleId, moduleCode }: { moduleId: string;
       </label>
       <label className="block text-sm">
         … oder den Inhalt hier einfügen
-        <textarea name="text" rows={4} placeholder='{"format": "ost-exercises/1", …}' className={`${textareaClass} font-mono`} />
+        <textarea name="text" rows={4} placeholder='{"format": "ost-exercises/1", …}' className={`${textareaClass} mt-1 font-mono`} />
       </label>
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Der Import ist wiederholbar: Aufgaben mit derselben ID werden aktualisiert (auch deine Änderungen daran, deine Versuche bleiben erhalten).
         Maximal 900 KB und 500 Aufgaben pro Datei.
       </p>

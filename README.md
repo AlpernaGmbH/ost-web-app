@@ -1,4 +1,4 @@
-# OST Lern-App
+# Pensum
 
 Lern-Web-App für das BSc Betriebsökonomie (OST, HS26): Module, Vorlesungen nach Woche, Notizen (Markdown + Formeln),
 Dokumente, Stundenplan-Import per iCal. Next.js (App Router) · Supabase (Auth, Postgres, Storage) · Vercel · PWA.

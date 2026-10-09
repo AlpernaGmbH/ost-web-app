@@ -185,14 +185,14 @@ export function NoteEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div role="tablist" className="inline-flex rounded-lg border border-border bg-card p-1 text-sm">
+        <div role="tablist" className="inline-flex rounded-pill border border-border bg-card p-1 text-sm">
           {(["edit", "preview"] as const).map((m) => (
             <button
               key={m}
               role="tab"
               aria-selected={mode === m}
               onClick={() => setMode(m)}
-              className={`min-h-9 rounded-md px-3 ${mode === m ? "bg-primary text-primary-foreground" : ""}`}
+              className={`min-h-9 rounded-pill px-4 font-bold ${mode === m ? "bg-primary text-primary-foreground" : ""}`}
             >
               {m === "edit" ? "Schreiben" : "Vorschau"}
             </button>
@@ -217,7 +217,7 @@ export function NoteEditor({
                 // keep the textarea selection while tapping a toolbar button
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => runTool(t.id)}
-                className="min-h-9 shrink-0 rounded-md border border-border bg-card px-3 text-sm"
+                className="min-h-9 shrink-0 rounded-pill border-2 border-control bg-card px-4 text-sm font-bold text-primary-ink"
               >
                 {t.label}
               </button>
@@ -232,11 +232,11 @@ export function NoteEditor({
             placeholder="Notizen in Markdown. Formeln: $x^2$ oder $$ … $$"
             lang="de"
             spellCheck
-            className="min-h-[55dvh] w-full resize-y rounded-lg border border-border bg-card p-3 font-mono text-[15px] leading-relaxed focus:outline-2 focus:outline-primary"
+            className="min-h-[55dvh] w-full resize-y rounded-field border-2 border-control bg-card p-4 font-mono text-[15px] leading-relaxed hover:border-primary"
           />
         </>
       ) : (
-        <div className="min-h-[55dvh] rounded-lg border border-border bg-card p-4">
+        <div className="min-h-[55dvh] rounded-field border border-border bg-card p-4">
           {content.trim() ? <Markdown>{content}</Markdown> : <p className="text-muted">Noch nichts geschrieben.</p>}
         </div>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Volume2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useReducer, useState } from "react";
 import { recordReview } from "@/app/actions/vocab";
@@ -25,9 +26,9 @@ function SpeakButton({ text }: { text: string }) {
       type="button"
       onClick={() => speak(text)}
       aria-label={`„${text}" anhören`}
-      className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-lg"
+      className="inline-flex size-12 items-center justify-center rounded-pill border-2 border-control bg-card text-primary-ink hover:bg-primary-soft"
     >
-      🔊
+      <Volume2 aria-hidden className="size-6" strokeWidth={2} />
     </button>
   );
 }
@@ -92,14 +93,14 @@ export function StudySession({
     const result = summary(state);
     return (
       <div className="space-y-5" data-testid="summary">
-        <h2 className="text-xl font-bold">Runde geschafft</h2>
-        <p className="text-lg">
-          {result.correct} von {result.total} gleich beim ersten Mal gewusst.
+        <h2 className="display-md">Runde geschafft</h2>
+        <p className="body-lg">
+          <span className="num font-semibold">{result.correct} von {result.total}</span> Begriffen sitzen gleich beim ersten Mal.
         </p>
         {result.wrong.length > 0 ? (
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-muted">Zum Nachlernen</h3>
-            <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+            <h3 className="label mb-2 text-muted">Zum Nachlernen</h3>
+            <ul className="divide-y divide-border rounded-card border border-border bg-card">
               {result.wrong.map((w) => (
                 <li key={w.id} className="flex items-center justify-between gap-3 px-4 py-3">
                   <span>
@@ -112,10 +113,10 @@ export function StudySession({
             </ul>
           </div>
         ) : null}
-        {saveFailed ? <p className="text-sm text-danger">Ein Teil des Fortschritts konnte nicht gespeichert werden (Verbindung?).</p> : null}
+        {saveFailed ? <p className="text-danger">Ein Teil des Fortschritts konnte nicht gespeichert werden (Verbindung?).</p> : null}
         <div className="flex flex-col gap-2 sm:flex-row">
           {result.wrong.length > 0 ? (
-            <Button onClick={() => dispatch({ type: "restart-wrong" })}>Falsche nochmals üben</Button>
+            <Button onClick={() => dispatch({ type: "restart-wrong" })}>Offene Begriffe üben</Button>
           ) : null}
           <a href={againHref} className={buttonClass(result.wrong.length > 0 ? "secondary" : "primary")}>
             Nächste Runde
@@ -135,21 +136,21 @@ export function StudySession({
   return (
     <div className="space-y-5">
       <div>
-        <div className="mb-1 flex justify-between text-xs text-muted">
+        <div className="mb-2 flex justify-between text-sm text-muted">
           <span>
             {state.pos + 1} / {state.queue.length}
             {entry.attempt === 1 ? " · Wiederholung" : ""}
           </span>
           <Link href={backHref}>Beenden</Link>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-3 overflow-hidden rounded-pill bg-sunken ring-1 ring-inset ring-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-full rounded-pill bg-primary transition-[width] duration-200 ease-out" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 text-center">
-        <p className="mb-1 text-xs uppercase tracking-wide text-muted">{entry.dir === "en-de" ? "Begriff" : "Bedeutung"}</p>
-        <p className="text-3xl font-semibold" data-testid="prompt">
+      <div className="rounded-card border border-border bg-card p-6 text-center shadow-card">
+        <p className="label mb-2 text-muted">{entry.dir === "en-de" ? "Begriff" : "Bedeutung"}</p>
+        <p className="card-word break-words" data-testid="prompt">
           {entry.prompt}
         </p>
         {entry.dir === "en-de" ? (
@@ -159,11 +160,11 @@ export function StudySession({
         ) : null}
         {mode === "cards" && state.revealed ? (
           <div className="mt-5 border-t border-border pt-5">
-            <p className="mb-1 text-xs uppercase tracking-wide text-muted">{targetLabel}</p>
-            <p className="text-2xl" data-testid="answer">
+            <p className="label mb-2 text-muted">{targetLabel}</p>
+            <p className="display-md" data-testid="answer">
               {entry.answer}
             </p>
-            {entry.example ? <p className="mt-3 text-sm italic text-muted">{entry.example}</p> : null}
+            {entry.example ? <p className="small mt-3 italic text-muted">{entry.example}</p> : null}
           </div>
         ) : null}
       </div>
@@ -171,13 +172,13 @@ export function StudySession({
       {mode === "cards" ? (
         state.revealed ? (
           <div className="grid grid-cols-3 gap-2">
-            <Button variant="danger" onClick={() => rate(0)}>
+            <Button variant="secondary" onClick={() => rate(0)}>
               Nochmal
             </Button>
-            <Button variant="secondary" onClick={() => rate(2)}>
-              Gut
+            <Button onClick={() => rate(2)}>Gut</Button>
+            <Button variant="secondary" onClick={() => rate(3)}>
+              Einfach
             </Button>
-            <Button onClick={() => rate(3)}>Einfach</Button>
           </div>
         ) : (
           <Button className="w-full" onClick={() => dispatch({ type: "reveal" })}>
@@ -221,21 +222,23 @@ export function StudySession({
             const isAnswer = option.toLowerCase() === entry.answer.toLowerCase();
             const picked = state.given === option;
             const tone = !state.verdict
-              ? "border-border bg-card hover:bg-border/40"
+              ? "border-control bg-card hover:border-primary"
               : isAnswer
-                ? "border-success bg-success/10"
+                ? "border-success bg-success-soft"
                 : picked
-                  ? "border-danger bg-danger/10"
+                  ? "border-danger bg-danger-soft"
                   : "border-border bg-card opacity-60";
+            const Icon = state.verdict && isAnswer ? Check : state.verdict && picked ? X : null;
             return (
               <button
                 key={option}
                 type="button"
                 disabled={Boolean(state.verdict)}
                 onClick={() => dispatch({ type: "pick", option })}
-                className={`min-h-12 w-full rounded-xl border px-4 py-3 text-left ${tone}`}
+                className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-field border-2 px-4 py-3 text-left ${tone}`}
               >
-                {option}
+                <span>{option}</span>
+                {Icon ? <Icon aria-hidden className="size-5 shrink-0" strokeWidth={2.5} /> : null}
               </button>
             );
           })}
@@ -247,7 +250,7 @@ export function StudySession({
         </div>
       ) : null}
 
-      {saveFailed ? <p className="text-sm text-danger">Fortschritt konnte nicht gespeichert werden (Verbindung?). Du kannst weiterlernen.</p> : null}
+      {saveFailed ? <p className="text-danger">Fortschritt konnte nicht gespeichert werden (Verbindung?). Du kannst weiterlernen.</p> : null}
     </div>
   );
 }
@@ -265,22 +268,33 @@ function Feedback({
 }) {
   return (
     <div className="space-y-3" role="status" data-testid="feedback">
-      {verdict === "correct" ? <p className="font-semibold text-success">Richtig!</p> : null}
+      {verdict === "correct" ? (
+        <p className="flex items-center gap-2 font-bold text-success">
+          <Check aria-hidden className="size-5" strokeWidth={2.5} />
+          Richtig!
+        </p>
+      ) : null}
       {verdict === "typo" ? (
-        <p className="font-semibold text-success">
-          Fast richtig, achte auf die Schreibweise: <span className="underline">{entry.answer}</span>
+        <p className="flex items-start gap-2 font-bold text-success">
+          <Check aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={2.5} />
+          <span>
+            Fast richtig, achte auf die Schreibweise: <span className="underline">{entry.answer}</span>
+          </span>
         </p>
       ) : null}
       {verdict === "wrong" ? (
-        <div>
-          <p className="font-semibold text-danger">Leider falsch.</p>
-          <p className="text-sm text-muted">Deine Antwort: {given || "–"}</p>
+        <div className="space-y-1">
+          <p className="flex items-center gap-2 font-bold text-danger">
+            <X aria-hidden className="size-5" strokeWidth={2.5} />
+            Nicht ganz.
+          </p>
+          <p className="small text-muted">Deine Antwort: {given || "–"}</p>
           <p>
-            Richtig: <span className="font-semibold">{entry.answer}</span>
+            Die richtige Antwort ist <span className="font-bold">{entry.answer}</span>
           </p>
         </div>
       ) : null}
-      {entry.example ? <p className="text-sm italic text-muted">{entry.example}</p> : null}
+      {entry.example ? <p className="small italic text-muted">{entry.example}</p> : null}
       <Button className="w-full" onClick={onNext} autoFocus>
         Weiter
       </Button>
