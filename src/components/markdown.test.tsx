@@ -17,6 +17,12 @@ describe("Markdown formulas", () => {
     expect(html).toContain(`class="${inner}"`);
   });
 
+  test("renders figures from /figures", () => {
+    const html = renderToStaticMarkup(<Markdown>{"![Parabel](/figures/wms-s1/u4-parabeln-1.svg)"}</Markdown>);
+    expect(html).toContain('src="/figures/wms-s1/u4-parabeln-1.svg"');
+    expect(html).toContain('alt="Parabel"');
+  });
+
   test("renders inline and display math", () => {
     const html = renderToStaticMarkup(<Markdown>{"Inline $x^2$.\n\n$$\n\\dfrac{a}{b}\n$$\n"}</Markdown>);
     expect(html).toContain("katex-display");

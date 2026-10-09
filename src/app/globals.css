@@ -96,3 +96,5 @@ body {
 .note-prose table { border-collapse: collapse; display: block; overflow-x: auto; }
 .note-prose th, .note-prose td { border: 1px solid var(--hairline); padding: 0.35rem 0.6rem; overflow-wrap: normal; vertical-align: top; }
 .note-prose .katex-display { overflow-x: auto; overflow-y: hidden; }
+/* figures (function graphs) are drawn on white so they stay readable in dark mode */
+.note-prose img { display: block; max-width: 100%; height: auto; background: #fff; border: 1px solid var(--hairline); border-radius: var(--pn-radius-field, 8px); }

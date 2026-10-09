@@ -185,4 +185,9 @@ describe.skipIf(localFiles.length === 0)("local exercise files in import/", () =
     expect(parsed.exercises.length).toBeGreaterThan(0);
     expect(parsed.exercises.every((e) => e.solution !== null && e.solution_source !== null)).toBe(true);
   });
+  it.each(localFiles)("%s only embeds figures that exist in public/", (file) => {
+    const text = readFileSync(`import/${file}`, "utf8");
+    const refs = [...text.matchAll(/\]\((\/figures\/[^)\s]+)\)/g)].map((m) => m[1]);
+    for (const ref of refs) expect(existsSync(`public${ref}`), ref).toBe(true);
+  });
 });
