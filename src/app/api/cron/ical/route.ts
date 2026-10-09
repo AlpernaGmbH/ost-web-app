@@ -1,18 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { bearerMatches } from "@/lib/bearer";
 import type { Semester } from "@/lib/db/types";
 import { syncSemester } from "@/lib/ical/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const maxDuration = 60;
 
-function authorized(request: Request): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false; // never run unauthenticated if the secret is missing
-  const given = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${secret}`;
-  return given.length === expected.length && timingSafeEqual(Buffer.from(given), Buffer.from(expected));
-}
+const authorized = (request: Request) => bearerMatches(request.headers.get("authorization"), process.env.CRON_SECRET);
 
 /** Daily iCal import for every semester that has a feed URL (Vercel Cron sends the Bearer secret). */
 export async function GET(request: Request) {

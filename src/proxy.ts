@@ -38,6 +38,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // The cron route authenticates with CRON_SECRET; static assets and the PWA manifest/icons stay public.
-  matcher: ["/((?!api/cron|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon.png|apple-icon.png|icons/).*)"],
+  // The cron and import routes authenticate with their own bearer secrets (CRON_SECRET, IMPORT_SECRET); static assets and the PWA manifest/icons stay public.
+  matcher: ["/((?!api/cron|api/import|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon.png|apple-icon.png|icons/).*)"],
 };

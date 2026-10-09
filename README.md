@@ -42,6 +42,10 @@ Aufgaben entstehen von Hand oder per **Übungsdatei** (JSON, `docs/examples/wms-
 `solution_source` (`source` | `derived` | `manual`), `aids`, `aids_confirmed`, `minutes`, `difficulty` (1–3), `points`, `source`, `source_ref`.
 Ungültige Einträge werden mit Begründung übersprungen, gültige importiert. Quellmaterial (Bücher, Moodle) und daraus erzeugte Übungsdateien bleiben ausserhalb des Repos (`import/` ist ignoriert).
 
+**Operator-Import ohne Formular:** `POST /api/import/exercises` mit `Authorization: Bearer <IMPORT_SECRET>` und der Übungsdatei als Body schreibt die Aufgaben
+in das Modul, das in der Datei steht (Service-Role, gleiche Prüfung wie das Formular). Gedacht für die Einzelnutzer-Phase: Gehört ein Modul mit diesem Kürzel
+mehreren Konten, wird nichts geschrieben. Ohne `IMPORT_SECRET` lehnt der Endpunkt alles ab.
+
 ## Entwickeln
 
 ```bash

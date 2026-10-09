@@ -17,6 +17,12 @@ test.describe("access control", () => {
     expect((await request.get("/api/cron/ical", { headers: { authorization: "Bearer wrong" } })).status()).toBe(401);
   });
 
+  test("import endpoint rejects missing and wrong secrets and is not redirected to /login", async ({ request }) => {
+    const url = "/api/import/exercises";
+    expect((await request.post(url, { data: "{}", maxRedirects: 0 })).status()).toBe(401);
+    expect((await request.post(url, { data: "{}", headers: { authorization: "Bearer wrong" }, maxRedirects: 0 })).status()).toBe(401);
+  });
+
   test("pages that read the session are never prerendered", () => {
     // A prerendered page would be served to everyone and skip the session check.
     for (const html of ["index", "settings"]) {
