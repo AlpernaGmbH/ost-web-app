@@ -44,7 +44,7 @@ Ungültige Einträge werden mit Begründung übersprungen, gültige importiert. 
 
 **Operator-Import ohne Formular:** `POST /api/import/exercises` mit `Authorization: Bearer <IMPORT_SECRET>` und der Übungsdatei als Body schreibt die Aufgaben
 in das Modul, das in der Datei steht (Service-Role, gleiche Prüfung wie das Formular). Gedacht für die Einzelnutzer-Phase: Gehört ein Modul mit diesem Kürzel
-mehreren Konten, wird nichts geschrieben. Ohne `IMPORT_SECRET` lehnt der Endpunkt alles ab.
+mehreren Konten, wird nichts geschrieben. Ohne `IMPORT_SECRET` lehnt der Endpunkt alles ab. Mit `?dry=1` wird nur geprüft (Modul gefunden, wie viele Einträge gültig), ohne zu schreiben.
 
 ## Entwickeln
 
