@@ -22,6 +22,9 @@ import { formatWeek, shortDate, weekNumber, weekRange, zurichDate } from "@/lib/
 
 type LectureRow = Pick<Lecture, "id" | "title" | "starts_at" | "ends_at" | "location" | "status">;
 
+// starting an AI run downloads the chosen PDFs and hands them to the provider; that takes longer than the default
+export const maxDuration = 60;
+
 export default async function ModulePage({ params, searchParams }: PageProps<"/m/[moduleId]">) {
   const user = await requireUser();
   const moduleId = parseUuidOrNotFound((await params).moduleId);
@@ -99,7 +102,7 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
       ) : tab === "vorlesungen" ? (
         <Lectures moduleId={module.id} startDate={semester.start_date} currentWeek={currentWeek} today={zurichDate(now)} />
       ) : (
-        <Documents moduleId={module.id} userId={user.id} />
+        <Documents moduleId={module.id} userId={user.id} course={module.kind === "course"} />
       )}
     </>
   );
@@ -196,7 +199,7 @@ async function Lectures({
   );
 }
 
-async function Documents({ moduleId, userId }: { moduleId: string; userId: string }) {
+async function Documents({ moduleId, userId, course }: { moduleId: string; userId: string; course: boolean }) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("documents")
@@ -209,6 +212,15 @@ async function Documents({ moduleId, userId }: { moduleId: string; userId: strin
   return (
     <div className="space-y-4">
       <UploadButton moduleId={moduleId} userId={userId} />
+      {course && documents.length > 0 ? (
+        <p className="text-sm text-muted">
+          Übungen aus diesen PDFs erzeugen:{" "}
+          <Link href={`/m/${moduleId}?tab=uebungen`} className="font-bold text-primary-ink">
+            Tab Übungen, «Aus Unterlagen erzeugen»
+          </Link>
+          .
+        </p>
+      ) : null}
       {documents.length === 0 ? (
         <Card>
           <p className="text-sm text-muted">Noch keine Dokumente. Folien, Skripte und Übungen lassen sich hier ablegen (max. 50 MB pro Datei).</p>

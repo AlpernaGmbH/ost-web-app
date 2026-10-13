@@ -45,9 +45,14 @@ export const labelOf = <T extends { id: string | number; label: string }>(list: 
   list.find((item) => item.id === id)?.label ?? "";
 
 /** What the exercise page and the editor need; `id` is the database row. */
+export const EXERCISE_STATUS_IDS = ["draft", "active"] as const;
+export type ExerciseStatus = (typeof EXERCISE_STATUS_IDS)[number];
+
 export type ExerciseRow = {
   id: string;
   module_id: string;
+  /** Generated exercises are drafts until they are accepted; everything else is active. */
+  status: ExerciseStatus;
   external_id: string | null;
   position: number;
   title: string;
@@ -68,5 +73,5 @@ export type ExerciseRow = {
 /** Slim row for the list (no task or solution text). */
 export type ExerciseListRow = Pick<
   ExerciseRow,
-  "id" | "title" | "topic" | "kind" | "aids" | "aids_confirmed" | "minutes" | "difficulty" | "points" | "source_label" | "source_ref"
+  "id" | "status" | "title" | "topic" | "kind" | "aids" | "aids_confirmed" | "minutes" | "difficulty" | "points" | "source_label" | "source_ref"
 > & { exercise_attempts: { result: Result; seconds: number | null; created_at: string }[] };

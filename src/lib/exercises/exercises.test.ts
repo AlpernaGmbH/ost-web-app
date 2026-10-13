@@ -117,7 +117,7 @@ describe("parseExerciseFile", () => {
 
 describe("stats", () => {
   const row = (topic: string, results: [ExerciseListRow["exercise_attempts"][number]["result"], string][], aids: ExerciseListRow["aids"] = []): ExerciseListRow => ({
-    id: topic + results.length, title: "t", topic, kind: "calculation", aids, aids_confirmed: false, minutes: null, difficulty: null, points: null, source_label: null, source_ref: null,
+    id: topic + results.length, status: "active", title: "t", topic, kind: "calculation", aids, aids_confirmed: false, minutes: null, difficulty: null, points: null, source_label: null, source_ref: null,
     exercise_attempts: results.map(([result, created_at]) => ({ result, seconds: null, created_at })),
   });
   const rows = [

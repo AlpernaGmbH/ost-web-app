@@ -54,6 +54,7 @@ export default async function PracticePage() {
       .from("exercises")
       .select("id, module_id, exercise_attempts(result, seconds, created_at)")
       .in("module_id", courseIds)
+      .eq("status", "active")
       .order("position")
       .order("created_at")
       .limit(5000)

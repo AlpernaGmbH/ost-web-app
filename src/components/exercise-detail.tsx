@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { deleteExercise } from "@/app/actions/exercises";
 import { ConfirmButton } from "@/components/confirm-button";
+import { DraftActions } from "@/components/draft-review";
 import { AidChips, metaLine, ResultBadge } from "@/components/exercise-meta";
 import { ExerciseRunner } from "@/components/exercise-runner";
 import { Markdown } from "@/components/markdown";
@@ -28,13 +29,21 @@ export function ExerciseDetail({
   const source = [exercise.source_label, exercise.source_ref].filter(Boolean).join(" · ");
   return (
     <>
-      <Link href={`/m/${moduleId}?tab=uebungen`} className="mb-4 inline-flex min-h-9 items-center font-bold text-primary-ink">
-        ← Übungen
+      <Link href={exercise.status === "draft" ? `/m/${moduleId}/ex/drafts` : `/m/${moduleId}?tab=uebungen`} className="mb-4 inline-flex min-h-9 items-center font-bold text-primary-ink">
+        {exercise.status === "draft" ? "← Entwürfe" : "← Übungen"}
       </Link>
       <header className="mb-4">
         <h1 className="display-md break-words">{exercise.title}</h1>
         <p className="mt-2 text-muted">{exercise.topic}</p>
       </header>
+
+      {exercise.status === "draft" ? (
+        <div className="mb-4 space-y-3 rounded-card border-2 border-primary bg-primary-soft p-4 text-on-primary-soft">
+          <p className="font-bold">Entwurf aus deinen Unterlagen (KI)</p>
+          <p className="text-sm">Noch nicht in der Übungsliste. Prüfe Aufgabe und Lösung, dann übernimm oder verwirf den Entwurf. «Bearbeiten» unten geht auch vorher.</p>
+          <DraftActions moduleId={moduleId} exerciseId={exercise.id} back={`/m/${moduleId}/ex/drafts`} size="md" />
+        </div>
+      ) : null}
 
       <Card className="mb-4 space-y-3">
         <p className="text-sm">{metaLine(exercise)}</p>

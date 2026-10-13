@@ -46,13 +46,28 @@ Ungültige Einträge werden mit Begründung übersprungen, gültige importiert. 
 in das Modul, das in der Datei steht (Service-Role, gleiche Prüfung wie das Formular). Gedacht für die Einzelnutzer-Phase: Gehört ein Modul mit diesem Kürzel
 mehreren Konten, wird nichts geschrieben. Ohne `IMPORT_SECRET` lehnt der Endpunkt alles ab. Mit `?dry=1` wird nur geprüft (Modul gefunden, wie viele Einträge gültig), ohne zu schreiben.
 
+## Übungen aus Unterlagen (KI)
+
+Im Tab **Übungen** eines Kursmoduls, unter «Aus Unterlagen erzeugen»: PDFs aus dem Tab Dokumente wählen (Übungsblatt und Lösung zusammen, höchstens 5,
+zusammen max. 32 MB), optional einen Hinweis («nur Kapitel 3») mitgeben, «Entwürfe erzeugen». Die App lädt die PDFs zum Anbieter hoch, zählt die Tokens,
+prüft das Monatsbudget und gibt **einen Auftrag an die Message Batches API** (Modell `claude-opus-5-5`, strukturierte Ausgabe, halber Preis, Ergebnis meist innert
+Minuten, spätestens nach 24 h). Solange ein Durchlauf offen ist, fragt die Seite alle 20 Sekunden nach; das Ergebnis wird beim nächsten Besuch abgeholt, auch
+Tage später. Was entsteht, sind **Entwürfe** (`exercises.status = draft`): sie erscheinen nicht beim Üben, sondern unter «Entwürfe prüfen», wo sie einzeln, pro
+Durchlauf oder alle zusammen übernommen oder verworfen werden. Jede Lösung trägt ihre Herkunft (`source` = aus der Musterlösung, `derived` = von der KI gerechnet).
+Pro Konto und Modul gilt RLS; jede Person erzeugt Übungen nur aus den eigenen Dateien.
+
+Einrichtung: `supabase/migrations/006_ai_runs.sql` ausführen, in Vercel `ANTHROPIC_API_KEY` (Console-Key von platform.claude.com) setzen, optional
+`AI_MONTHLY_CAP_USD` (ganze App, Standard 10) und `AI_USER_MONTHLY_CAP_USD` (pro Konto, Standard 5). Ein Durchlauf, der eines der Limits sprengen würde, wird
+abgelehnt; der Verbrauch des Monats steht in den Einstellungen. Ohne Schlüssel zeigt die App die Funktion als «nicht eingerichtet». Die Kosten hängen von der
+Seitenzahl ab (Richtwert: ein Übungsblatt mit Lösung wenige Rappen bis etwa 0.30 USD, ein 100-Seiten-Skript bis etwa 1 USD).
+
 ## Entwickeln
 
 ```bash
 npm install
 npm run dev
 npm run lint && npm run typecheck
-npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Kalender, Vokabeln, Übungen
+npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Kalender, Vokabeln, Übungen, KI-Extraktion (ohne API-Aufrufe)
 npm run test:db     # Migration + RLS gegen ein temporäres lokales Postgres (braucht Postgres-Server-Binaries)
 npm run test:e2e    # Playwright-Smoke (Mobile-Viewport), braucht kein Supabase
 ```

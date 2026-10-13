@@ -20,7 +20,7 @@ export default async function EditExercisePage({ params }: PageProps<"/m/[module
   const [exerciseRes, topicsRes] = await Promise.all([
     supabase
       .from("exercises")
-      .select("id, module_id, external_id, position, title, topic, kind, task_md, solution_md, solution_source, aids, aids_confirmed, minutes, difficulty, points, source_label, source_ref")
+      .select("id, module_id, status, external_id, position, title, topic, kind, task_md, solution_md, solution_source, aids, aids_confirmed, minutes, difficulty, points, source_label, source_ref")
       .eq("id", exerciseId)
       .eq("module_id", moduleId)
       .maybeSingle<ExerciseRow>(),

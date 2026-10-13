@@ -55,3 +55,25 @@ export type DocumentRow = {
   sha256: string;
   created_at: string;
 };
+
+// mirrors supabase/migrations/006_ai_runs.sql
+export type AiRunStatus = "queued" | "processing" | "done" | "failed";
+export type AiRun = {
+  id: string;
+  module_id: string;
+  status: AiRunStatus;
+  documents: { id: string; filename: string }[];
+  hint: string | null;
+  model: string;
+  provider_batch_id: string | null;
+  provider_file_ids: string[];
+  input_tokens: number | null;
+  output_tokens: number | null;
+  cost_usd: number | string; // numeric comes back as a string
+  exercises_created: number;
+  summary: string | null;
+  error: string | null;
+  created_at: string;
+  claimed_at: string | null;
+  finished_at: string | null;
+};
