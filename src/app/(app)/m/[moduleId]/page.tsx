@@ -52,6 +52,8 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
 
   const now = new Date();
   const currentWeek = weekNumber(semester.start_date, now);
+  // an error here (migration 007 not applied yet) only hides the link
+  const { count: openTasks } = await supabase.from("tasks").select("id", { count: "exact", head: true }).eq("module_id", module.id).neq("status", "done");
 
   // language modules get a vocabulary tab and open on it
   const isLanguage = module.kind === "language";
@@ -67,16 +69,19 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
 
   return (
     <>
-      <Link href="/" className="mb-3 inline-block font-bold text-primary-ink">
-        ← Module
+      <Link href="/faecher" className="mb-3 inline-block font-bold text-primary-ink">
+        ← Fächer
       </Link>
       <PageTitle
         title={module.name}
         size="md"
         subtitle={
-          <span className="flex items-center gap-3">
+          <span className="flex flex-wrap items-center gap-3">
             <ModuleChip code={module.code} tone={tone} />
             {module.ects > 0 ? <span>{module.ects} ECTS</span> : null}
+            <Link href={openTasks ? `/aufgaben?f=${module.id}` : `/aufgaben/neu?m=${module.id}`} className="font-bold text-primary-ink">
+              {openTasks ? `${openTasks} ${openTasks === 1 ? "offene Aufgabe" : "offene Aufgaben"} →` : "+ Aufgabe"}
+            </Link>
           </span>
         }
       />

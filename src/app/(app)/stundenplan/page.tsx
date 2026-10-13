@@ -195,7 +195,13 @@ function MonthView({
   };
   return (
     <div className="space-y-4">
-      <MonthGrid weeks={weeks} selected={selected} modules={modules} hrefFor={(date) => href("month", { month: date.slice(0, 7), day: date })} />
+      <MonthGrid
+        weeks={weeks}
+        selected={selected}
+        mark={(item) => ({ id: item.id, tone: item.module_id ? modules.get(item.module_id)?.tone : undefined, muted: item.status === "cancelled" })}
+        countLabel={(count) => (count === 0 ? "keine Termine" : count === 1 ? "1 Termin" : `${count} Termine`)}
+        hrefFor={(date) => href("month", { month: date.slice(0, 7), day: date })}
+      />
       <AgendaView days={[day]} modules={modules} showEmptyDays />
     </div>
   );

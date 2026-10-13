@@ -1,9 +1,14 @@
 # Pensum
 
-Lern-Web-App für das BSc Betriebsökonomie (OST, HS26): Module, Vorlesungen nach Woche, Notizen (Markdown + Formeln),
-Dokumente, Stundenplan-Import per iCal. Next.js (App Router) · Supabase (Auth, Postgres, Storage) · Vercel · PWA.
+Lern-Web-App für das BSc Betriebsökonomie (OST, HS26): Dashboard, Fächer mit Vorlesungen nach Woche, Notizen (Markdown + Formeln),
+Dokumente, Stundenplan-Import per iCal, Aufgaben (Liste, Board, Kalender), Vokabeltrainer und Übungsbank.
+Next.js (App Router) · Supabase (Auth, Postgres, Storage) · Vercel · PWA.
 
-Stand: **Phase 1** (Grundgerüst). Karteikarten/MC (Phase 2) und Übungen/Dashboard (Phase 3) folgen nach Freigabe.
+## Navigation
+
+Auf dem Handy eine Leiste am unteren Rand, ab Tablet-Breite eine Spalte links, auf jeder Seite gleich:
+**Dashboard** (`/`: heute, fällige Aufgaben, Üben, Fächer), **Fächer** (`/faecher`: ein Modul pro Karte), **Aufgaben** (`/aufgaben`),
+**Stundenplan** (`/stundenplan`), **Üben** (`/ueben`) und **Einstellungen** (`/settings`, auf dem Handy über das Zahnrad im Dashboard).
 
 ## Einrichten
 
@@ -21,6 +26,15 @@ Stand: **Phase 1** (Grundgerüst). Karteikarten/MC (Phase 2) und Übungen/Dashbo
 5. In der App: Startseite → „Semester HS26 einrichten", dann *Einstellungen* → iCal-Abo-Link speichern → „Jetzt synchronisieren".
    Nicht zugeordnete Termine landen in der Inbox; Stichwörter pro Modul sind in den Einstellungen editierbar.
 6. Auf dem Handy: Seite öffnen → „Zum Home-Bildschirm" (iOS) bzw. „App installieren" (Android).
+
+## Aufgaben
+
+Eigene To-dos, Abgaben, Prüfungstermine und Lernvorhaben, unabhängig vom Stundenplan (`/aufgaben`, setzt `supabase/migrations/007_tasks.sql` voraus).
+Jede Aufgabe hat Titel, optional ein Fach, Fälligkeit, Priorität (Hoch/Normal/Tief), Typ (Aufgabe/Abgabe/Prüfung/Lernen), Status (Offen/In Arbeit/Erledigt)
+und Notizen. Drei Ansichten: **Liste** (nach Fälligkeit, überfällig rot markiert), **Board** (eine Spalte pro Status; erledigte der letzten Woche)
+und **Kalender** (Monatsraster mit einem Punkt pro fälliger Aufgabe in der Fachfarbe, darunter der gewählte Tag). Filter nach Fach, «Erledigte anzeigen»,
+Status direkt in der Zeile umstellen, Schnelleingabe am Ende jeder Ansicht (im Kalender mit dem gewählten Tag als Fälligkeit). Das Dashboard zeigt, was
+überfällig ist oder in den nächsten sieben Tagen ansteht; die Fach-Seite nennt die offenen Aufgaben pro Fach.
 
 ## Vokabeltrainer (Modul „Englisch“)
 
@@ -67,7 +81,7 @@ Seitenzahl ab (Richtwert: ein Übungsblatt mit Lösung wenige Rappen bis etwa 0.
 npm install
 npm run dev
 npm run lint && npm run typecheck
-npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Kalender, Vokabeln, Übungen, KI-Extraktion (ohne API-Aufrufe)
+npm test            # Vitest: Wochenzählung, iCal-Parser/Planer, Kalender, Aufgaben, Vokabeln, Übungen, KI-Extraktion (ohne API-Aufrufe)
 npm run test:db     # Migration + RLS gegen ein temporäres lokales Postgres (braucht Postgres-Server-Binaries)
 npm run test:e2e    # Playwright-Smoke (Mobile-Viewport), braucht kein Supabase
 ```
@@ -88,3 +102,12 @@ Hinweise:
 - [ ] Zweiter Sync direkt danach: „0 neu, 0 aktualisiert"
 - [ ] Notiz mit `$x^2$` tippen, Vorschau zeigt Formel; App schliessen, wieder öffnen → Text ist da
 - [ ] PDF hochladen (Modul-Tab und an Vorlesung), öffnen, löschen; dieselbe Datei nochmals → „schon vorhanden"
+
+## Abnahme Aufgaben (manuell, auf dem Handy)
+
+- [ ] Migration `007_tasks.sql` ausgeführt; `/aufgaben` zeigt die leere Liste statt einer Fehlermeldung
+- [ ] Schnelleingabe: Titel tippen, Enter → Zeile erscheint, Feld ist leer
+- [ ] Status in der Zeile auf «Erledigt» → verschwindet aus der Liste, «Erledigte anzeigen» holt sie zurück (durchgestrichen)
+- [ ] «Neue Aufgabe» mit Fach, Datum gestern, Priorität Hoch → in der Liste rot «überfällig», im Dashboard unter Aufgaben
+- [ ] Kalender: Tag antippen, Schnelleingabe nutzt diesen Tag; Punkt erscheint im Raster
+- [ ] Board: Spalten seitlich wischen, Status per Auswahl verschieben

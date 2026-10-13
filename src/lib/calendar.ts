@@ -73,8 +73,9 @@ export function visibleDays(days: AgendaDay[]): AgendaDay[] {
 
 // ---- month view -------------------------------------------------------------------------------
 
-export type MonthDay = { date: string; inMonth: boolean; isToday: boolean; items: AgendaItem[] };
-export type MonthWeek = { monday: string; week: number; days: MonthDay[] };
+// The month grid is shared by the timetable (lectures) and the task list (tasks by due date), hence the type parameter.
+export type MonthDay<T = AgendaItem> = { date: string; inMonth: boolean; isToday: boolean; items: T[] };
+export type MonthWeek<T = AgendaItem> = { monday: string; week: number; days: MonthDay<T>[] };
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -93,14 +94,14 @@ export function monthBounds(month: string): { from: string; to: string } {
   return { from: mondayOf(`${month}-01`), to: addDays(mondayOf(last), 7) };
 }
 
-/** Weeks (rows) of the month grid, including the leading and trailing days of the neighbouring months. */
-export function buildMonth(month: string, byDate: Map<string, AgendaItem[]>, today: string, semesterStart: string): MonthWeek[] {
+/** Weeks (rows) of the month grid, including the leading and trailing days of the neighbouring months. Without a semester there are no week numbers (0). */
+export function buildMonth<T>(month: string, byDate: Map<string, T[]>, today: string, semesterStart: string | null): MonthWeek<T>[] {
   const { from, to } = monthBounds(month);
-  const weeks: MonthWeek[] = [];
+  const weeks: MonthWeek<T>[] = [];
   for (let monday = from; monday < to; monday = addDays(monday, 7)) {
     weeks.push({
       monday,
-      week: weekNumber(semesterStart, zurichInstant(monday, "12:00")),
+      week: semesterStart ? weekNumber(semesterStart, zurichInstant(monday, "12:00")) : 0,
       days: Array.from({ length: 7 }, (_, i) => {
         const date = addDays(monday, i);
         return { date, inMonth: date.startsWith(month), isToday: date === today, items: byDate.get(date) ?? [] };

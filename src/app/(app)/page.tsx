@@ -1,23 +1,32 @@
+import { Settings } from "lucide-react";
 import Link from "next/link";
 import { AgendaView } from "@/components/agenda";
 import { BootstrapForm } from "@/components/forms";
 import { ModuleChip } from "@/components/module-chip";
+import { QuickAddForm } from "@/components/task-forms";
+import { TaskRows, type TaskModule } from "@/components/task-list";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Card, PageTitle } from "@/components/ui";
+import { buttonClass, Card, PageTitle } from "@/components/ui";
 import { groupWeek, type AgendaLecture } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
-import type { Lecture, Module, Semester } from "@/lib/db/types";
+import type { Module, Semester } from "@/lib/db/types";
 import { formatDateTime } from "@/lib/format";
 import { assignTones } from "@/lib/module-tone";
-import { isDue } from "@/lib/vocab/srs";
 import { createClient } from "@/lib/supabase/server";
+import { upcomingTasks } from "@/lib/tasks/tasks";
+import type { TaskListRow } from "@/lib/tasks/types";
+import { isDue } from "@/lib/vocab/srs";
 import { addDays, mondayOf, weekNumber, zurichDate, zurichInstant } from "@/lib/week";
 
+const TASKS_SHOWN = 5;
+
+/** Dashboard: today's lectures, what is due, what to practise, and the way into every subject. */
 export default async function HomePage() {
   await requireUser();
   const supabase = await createClient();
   const now = new Date();
+  const today = zurichDate(now);
 
   const { data: semester, error: semesterError } = await supabase
     .from("semesters")
@@ -52,30 +61,14 @@ export default async function HomePage() {
     );
   }
 
-  const today = zurichDate(now);
-  const [modulesRes, upcomingRes, inboxRes, todayRes, nextRes] = await Promise.all([
+  const [modulesRes, inboxRes, todayRes, nextRes, tasksRes] = await Promise.all([
     supabase
       .from("modules")
-      .select("id, code, name, ects, kind")
+      .select("id, code, name, kind")
       .eq("semester_id", semester.id)
       .order("sort_order")
-      .returns<Pick<Module, "id" | "code" | "name" | "ects" | "kind">[]>(),
-    supabase
-      .from("lectures")
-      .select("id, module_id, title, starts_at")
-      .eq("semester_id", semester.id)
-      .eq("status", "scheduled")
-      .not("module_id", "is", null)
-      .gte("starts_at", now.toISOString())
-      .order("starts_at")
-      .limit(200)
-      .returns<Pick<Lecture, "id" | "module_id" | "title" | "starts_at">[]>(),
-    supabase
-      .from("lectures")
-      .select("id", { count: "exact", head: true })
-      .eq("semester_id", semester.id)
-      .is("module_id", null)
-      .eq("status", "scheduled"),
+      .returns<Pick<Module, "id" | "code" | "name" | "kind">[]>(),
+    supabase.from("lectures").select("id", { count: "exact", head: true }).eq("semester_id", semester.id).is("module_id", null).eq("status", "scheduled"),
     supabase
       .from("lectures")
       .select("id, module_id, title, starts_at, ends_at, location, status")
@@ -93,97 +86,161 @@ export default async function HomePage() {
       .order("starts_at")
       .limit(1)
       .returns<{ id: string; title: string; starts_at: string }[]>(),
+    supabase
+      .from("tasks")
+      .select("id, module_id, title, kind, priority, status, due_date, done_at, created_at")
+      .neq("status", "done")
+      .lte("due_date", addDays(today, 6))
+      .order("due_date")
+      .limit(200)
+      .returns<TaskListRow[]>(),
   ]);
 
   const modules = modulesRes.data ?? [];
-  const nextByModule = new Map<string, Pick<Lecture, "id" | "title" | "starts_at">>();
-  for (const l of upcomingRes.data ?? []) {
-    if (l.module_id && !nextByModule.has(l.module_id)) nextByModule.set(l.module_id, l);
-  }
-  // language modules show how many words are due instead of the next lecture
-  const languageIds = modules.filter((m) => m.kind === "language").map((m) => m.id);
-  const vocabStats = new Map<string, { total: number; due: number }>();
-  if (languageIds.length > 0) {
+  const tones = assignTones(modules);
+  const agendaModules = new Map(modules.map((m) => [m.id, { code: m.code, tone: tones.get(m.id) ?? 0, admin: m.kind === "admin" }]));
+  const taskModules = new Map<string, TaskModule>(modules.map((m) => [m.id, { code: m.code, tone: tones.get(m.id) ?? 0 }]));
+
+  // language modules: how many words are due
+  const languageModules = modules.filter((m) => m.kind === "language");
+  const vocabDue = new Map<string, number>();
+  if (languageModules.length > 0) {
     // an error (e.g. vocabulary migration not applied yet) just hides the numbers
     const { data: vocab } = await supabase
       .from("cards")
       .select("module_id, due_at")
-      .in("module_id", languageIds)
+      .in(
+        "module_id",
+        languageModules.map((m) => m.id),
+      )
       .eq("kind", "vocab")
       .eq("status", "active")
       .limit(10000);
-    for (const c of vocab ?? []) {
-      const entry = vocabStats.get(c.module_id) ?? { total: 0, due: 0 };
-      entry.total++;
-      if (isDue({ due_at: c.due_at }, now)) entry.due++;
-      vocabStats.set(c.module_id, entry);
-    }
+    for (const c of vocab ?? []) if (isDue({ due_at: c.due_at }, now)) vocabDue.set(c.module_id, (vocabDue.get(c.module_id) ?? 0) + 1);
   }
+
   const todayDay = groupWeek(mondayOf(today), todayRes.data ?? [], now).filter((d) => d.isToday);
-  const tones = assignTones(modules);
-  const agendaModules = new Map(modules.map((m) => [m.id, { code: m.code, tone: tones.get(m.id) ?? 0, admin: m.kind === "admin" }]));
   const nextEvent = nextRes.data?.[0];
   const hasLeftToday = (todayRes.data ?? []).some((l) => l.status === "scheduled" && Date.parse(l.ends_at ?? l.starts_at) > now.getTime());
   const week = weekNumber(semester.start_date, now);
   const inboxCount = inboxRes.count ?? 0;
+  const dueTasks = upcomingTasks(tasksRes.data ?? [], today, TASKS_SHOWN);
+  const moreTasks = Math.max(0, (tasksRes.data?.length ?? 0) - dueTasks.length);
 
   return (
     <>
       <PageTitle
-        action={<ThemeToggle variant="icon" />}
-        title="Module"
+        action={
+          <span className="flex shrink-0 items-center gap-2">
+            <ThemeToggle variant="icon" />
+            <Link href="/settings" aria-label="Einstellungen" className={buttonClass("secondary", "size-12 px-0 md:hidden")}>
+              <Settings aria-hidden className="size-6" strokeWidth={2} />
+            </Link>
+          </span>
+        }
+        title="Dashboard"
         subtitle={week >= 1 ? `${semester.name} · Woche ${String(week).padStart(2, "0")}` : `${semester.name} · beginnt am ${semester.start_date}`}
       />
 
-      <section aria-labelledby="today-h" className="mb-6 space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 id="today-h" className="display-md">
-            Heute
-          </h2>
-          <Link href="/stundenplan" className="font-bold text-primary-ink">
-            Stundenplan →
-          </Link>
-        </div>
-        <AgendaView days={todayDay} modules={agendaModules} />
-        {!hasLeftToday && nextEvent ? (
-          <p className="text-muted">
-            Nächster Termin: {formatDateTime(nextEvent.starts_at)} · {nextEvent.title}
-          </p>
-        ) : null}
-      </section>
+      <div className="space-y-8">
+        <section aria-labelledby="today-h" className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 id="today-h" className="display-md">
+              Heute
+            </h2>
+            <Link href="/stundenplan" className="font-bold text-primary-ink">
+              Stundenplan →
+            </Link>
+          </div>
+          <AgendaView days={todayDay} modules={agendaModules} />
+          {!hasLeftToday && nextEvent ? (
+            <p className="text-muted">
+              Nächster Termin: {formatDateTime(nextEvent.starts_at)} · {nextEvent.title}
+            </p>
+          ) : null}
+          {inboxCount > 0 ? (
+            <Link href="/settings#inbox" className="block rounded-field bg-primary-soft p-4 text-on-primary-soft">
+              {inboxCount} importierte {inboxCount === 1 ? "Termin ist" : "Termine sind"} keinem Modul zugeordnet →
+            </Link>
+          ) : null}
+        </section>
 
-      {inboxCount > 0 ? (
-        <Link href="/settings#inbox" className="mb-4 block rounded-field bg-primary-soft p-4 text-on-primary-soft">
-          {inboxCount} importierte {inboxCount === 1 ? "Termin ist" : "Termine sind"} keinem Modul zugeordnet →
-        </Link>
-      ) : null}
+        <section aria-labelledby="tasks-h" className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 id="tasks-h" className="display-md">
+              Aufgaben
+            </h2>
+            <Link href="/aufgaben" className="font-bold text-primary-ink">
+              Alle Aufgaben →
+            </Link>
+          </div>
+          {tasksRes.error ? (
+            <Card>
+              <p className="text-sm">{describeDbError(tasksRes.error)}</p>
+            </Card>
+          ) : (
+            <>
+              <TaskRows tasks={dueTasks} modules={taskModules} today={today} emptyText="Diese Woche ist nichts fällig." />
+              {moreTasks > 0 ? (
+                <p className="text-sm text-muted">
+                  <Link href="/aufgaben" className="font-bold text-primary-ink">
+                    {moreTasks === 1 ? "1 weitere Aufgabe" : `${moreTasks} weitere Aufgaben`} diese Woche →
+                  </Link>
+                </p>
+              ) : null}
+              <QuickAddForm />
+            </>
+          )}
+        </section>
 
-      <ul className="space-y-4">
-        {modules.map((m) => {
-          const next = nextByModule.get(m.id);
-          const vocab = vocabStats.get(m.id);
-          return (
-            <li key={m.id}>
-              <Link href={`/m/${m.id}`} className="block rounded-card border border-border bg-card p-6 transition-colors duration-150 hover:bg-sunken">
-                <span className="flex items-start justify-between gap-3">
-                  <span className="heading min-w-0">{m.name}</span>
+        <section aria-labelledby="practice-h" className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 id="practice-h" className="display-md">
+              Üben
+            </h2>
+            <Link href="/ueben" className="font-bold text-primary-ink">
+              Üben →
+            </Link>
+          </div>
+          <Card className="space-y-2">
+            {languageModules.map((m) => {
+              const due = vocabDue.get(m.id) ?? 0;
+              return (
+                <p key={m.id} className="flex items-center justify-between gap-3">
+                  <span>
+                    <span className="num font-semibold">{due}</span> {due === 1 ? "Wort" : "Wörter"} fällig · {m.name}
+                  </span>
+                  <Link href={`/m/${m.id}`} className="shrink-0 font-bold text-primary-ink">
+                    Lernen →
+                  </Link>
+                </p>
+              );
+            })}
+            <p className="text-sm text-muted">Übungen pro Fach mit Fortschritt: unter Üben.</p>
+          </Card>
+        </section>
+
+        <section aria-labelledby="subjects-h" className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 id="subjects-h" className="display-md">
+              Fächer
+            </h2>
+            <Link href="/faecher" className="font-bold text-primary-ink">
+              Alle Fächer →
+            </Link>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {modules.map((m) => (
+              <li key={m.id}>
+                <Link href={`/m/${m.id}`} className="flex min-h-12 items-center gap-3 rounded-pill border border-border bg-card px-4 pr-5 transition-colors hover:bg-sunken">
                   <ModuleChip code={m.code} tone={tones.get(m.id)} />
-                </span>
-                <span className="mt-2 block text-muted">
-                  {m.ects > 0 ? `${m.ects} ECTS · ` : ""}
-                  {vocab && vocab.total > 0
-                    ? `${vocab.due} von ${vocab.total} Wörtern zu üben`
-                    : next
-                      ? `${m.kind === "admin" ? "Nächster Termin" : "Nächste Vorlesung"}: ${formatDateTime(next.starts_at)}`
-                      : m.kind === "admin"
-                        ? "Kein kommender Termin"
-                        : "Keine kommende Vorlesung"}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                  <span className="font-semibold">{m.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </>
   );
 }

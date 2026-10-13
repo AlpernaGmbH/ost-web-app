@@ -18,6 +18,7 @@ const MIGRATION_OF_TABLE: Record<string, string> = {
   exercises: "004_exercises.sql",
   exercise_attempts: "004_exercises.sql",
   ai_runs: "006_ai_runs.sql",
+  tasks: "007_tasks.sql",
 };
 
 // columns later migrations add to existing tables
