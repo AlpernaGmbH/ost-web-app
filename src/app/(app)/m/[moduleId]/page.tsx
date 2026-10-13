@@ -223,7 +223,7 @@ async function Documents({ moduleId, userId, course }: { moduleId: string; userI
       ) : null}
       {documents.length === 0 ? (
         <Card>
-          <p className="text-sm text-muted">Noch keine Dokumente. Folien, Skripte und Übungen lassen sich hier ablegen (max. 50 MB pro Datei).</p>
+          <p className="text-sm text-muted">Noch keine Dokumente. Folien, Skripte und Übungen lassen sich hier ablegen (max. 50 MB pro Datei). Ein ZIP wird entpackt: ein Ordner pro Modul reicht.</p>
         </Card>
       ) : (
         <ul className="divide-y divide-border rounded-card border border-border bg-card">

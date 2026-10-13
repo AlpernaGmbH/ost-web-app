@@ -76,7 +76,7 @@ Hinweise:
 
 - **Next.js 16**: `proxy.ts` ersetzt `middleware.ts`. Cache Components ist bewusst **aus** (privater, session-abhängiger Inhalt, kein statischer Shell-Gewinn).
 - Jede Server Action und jeder Route Handler prüft die Session selbst (`requireUser()`); der Proxy ist nur ein optimistischer Gate.
-- Dateien gehen direkt vom Browser nach Supabase Storage (umgeht das 4.5-MB-Request-Limit von Vercel); max. 50 MB pro Datei.
+- Dateien gehen direkt vom Browser nach Supabase Storage (umgeht das 4.5-MB-Request-Limit von Vercel); max. 50 MB pro Datei. Ein ZIP wird im Browser entpackt (`fflate`) und Datei für Datei hochgeladen; Ordner, versteckte Dateien und macOS-Reste werden übersprungen.
 - Kein Service Worker: Manifest + Icons reichen für „Zum Home-Bildschirm". Offline-Zugriff ist nicht vorgesehen.
 - `test:db` nutzt Supabase-Stubs auf Plain-Postgres. Gegen das echte Projekt muss RLS einmal manuell gegengeprüft werden.
 

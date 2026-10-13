@@ -22,7 +22,7 @@ export function AiGenerateForm({ moduleId, documents, enabled, disabledReason }:
         Entwürfe: du prüfst sie und übernimmst sie mit einem Klick.
       </p>
       {pdfs.length === 0 ? (
-        <p className="text-sm">Noch keine PDFs in diesem Modul. Lade sie im Tab «Dokumente» hoch.</p>
+        <p className="text-sm">Noch keine PDFs in diesem Modul. Lade sie im Tab «Dokumente» hoch, einzeln oder als ZIP.</p>
       ) : (
         <fieldset className="space-y-2">
           <legend className="text-sm">Dokumente (höchstens 5, zusammen max. 32 MB)</legend>

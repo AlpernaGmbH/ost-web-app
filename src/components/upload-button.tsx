@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { documentExists, registerDocument } from "@/app/actions/documents";
 import { createClient } from "@/lib/supabase/browser";
+import { filesFromZip, isZip } from "@/lib/zip";
 import { buttonClass } from "./ui";
 
 const MAX_BYTES = 50 * 1024 * 1024; // bucket limit on the Supabase free plan
@@ -60,20 +61,35 @@ export function UploadButton({
     return { ok: true, text: `${file.name}: hochgeladen` };
   }
 
+  /** A ZIP is unpacked here in the browser and its files are uploaded one by one (a whole folder of material in one go). */
+  async function expand(file: File): Promise<{ files: File[]; error?: string }> {
+    if (!isZip(file)) return { files: [file] };
+    try {
+      const files = filesFromZip(new Uint8Array(await file.arrayBuffer()));
+      return files.length > 0 ? { files } : { files: [], error: `${file.name}: das ZIP enthält keine Dateien` };
+    } catch {
+      return { files: [], error: `${file.name}: ZIP konnte nicht gelesen werden` };
+    }
+  }
+
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
+    const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (files.length === 0) return;
+    if (picked.length === 0) return;
     setBusy(true);
     setMessages([]);
     const results: { ok: boolean; text: string }[] = [];
-    for (const file of files) {
-      try {
-        results.push(await uploadOne(file));
-      } catch (err) {
-        results.push({ ok: false, text: `${file.name}: ${err instanceof Error ? err.message : "Fehler"}` });
+    for (const item of picked) {
+      const { files, error } = await expand(item);
+      if (error) results.push({ ok: false, text: error });
+      for (const file of files) {
+        try {
+          results.push(await uploadOne(file));
+        } catch (err) {
+          results.push({ ok: false, text: `${file.name}: ${err instanceof Error ? err.message : "Fehler"}` });
+        }
+        setMessages([...results]);
       }
-      setMessages([...results]);
     }
     setBusy(false);
     router.refresh();
