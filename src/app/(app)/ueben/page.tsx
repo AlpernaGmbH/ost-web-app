@@ -44,16 +44,17 @@ export default async function PracticePage() {
     .returns<Pick<Module, "id" | "code" | "name" | "kind" | "color">[]>();
   if (modulesError) return <Card>{describeDbError(modulesError)}</Card>;
   const modules = allModules ?? [];
-  const courseIds = modules.filter((m) => m.kind === "course").map((m) => m.id);
+  // courses and language modules both have an exercise bank; language modules add their vocabulary
+  const moduleIds = modules.map((m) => m.id);
   const languageIds = modules.filter((m) => m.kind === "language").map((m) => m.id);
 
   const byModule = new Map<string, Row[]>();
   let exerciseError: { code?: string; message?: string } | null = null;
-  if (courseIds.length > 0) {
+  if (moduleIds.length > 0) {
     const { data, error } = await supabase
       .from("exercises")
       .select("id, module_id, exercise_attempts(result, seconds, created_at)")
-      .in("module_id", courseIds)
+      .in("module_id", moduleIds)
       .eq("status", "active")
       .order("position")
       .order("created_at")

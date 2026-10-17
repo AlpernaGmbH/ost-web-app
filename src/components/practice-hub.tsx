@@ -22,7 +22,8 @@ export function PracticeHub({
   vocab: Map<string, { total: number; due: number }>;
 }) {
   const tones = assignTones(modules);
-  const hasWork = (m: HubModule) => (m.kind === "language" ? (vocab.get(m.id)?.due ?? 0) > 0 : Boolean(firstOpen(exercises.get(m.id) ?? [])));
+  const vocabDue = (m: HubModule) => m.kind === "language" && (vocab.get(m.id)?.due ?? 0) > 0;
+  const hasWork = (m: HubModule) => vocabDue(m) || Boolean(firstOpen(exercises.get(m.id) ?? []));
   // one primary button per view: the first module that has something to do
   const primaryId = modules.find(hasWork)?.id;
 
@@ -52,9 +53,33 @@ export function PracticeHub({
                     "Noch keine Wörter."
                   )}
                 </p>
-                <Link href={`/m/${m.id}`} className={buttonClass(variant, "w-full")}>
+                {/* the primary button goes to the words while some are due, otherwise to the next open exercise */}
+                <Link href={`/m/${m.id}`} className={buttonClass(vocabDue(m) ? variant : "secondary", "w-full")}>
                   Vokabeln üben
                 </Link>
+                {summary.total > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      <p>
+                        <span className="num font-semibold">{summary.correct}</span> von <span className="num font-semibold">{summary.total}</span>{" "}
+                        <span className="text-muted">Übungen sitzen</span>
+                      </p>
+                      <ProgressBar summary={summary} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {next ? (
+                        <Link href={`/m/${m.id}/ex/${next.id}`} className={buttonClass(vocabDue(m) ? "secondary" : variant)}>
+                          Weiter üben
+                        </Link>
+                      ) : (
+                        <span className="inline-flex min-h-12 items-center justify-center font-bold text-success">Alles gelöst</span>
+                      )}
+                      <Link href={`/m/${m.id}?tab=uebungen`} className={buttonClass("secondary")}>
+                        Alle Übungen
+                      </Link>
+                    </div>
+                  </>
+                ) : null}
               </div>
             ) : summary.total === 0 ? (
               <p className="mt-4 text-muted">Noch nichts zu üben. Neue Aufgaben kommen aus deinen Unterlagen.</p>

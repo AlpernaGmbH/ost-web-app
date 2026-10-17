@@ -59,13 +59,14 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
   const isLanguage = module.kind === "language";
   const tabs = [
     ...(isLanguage ? [{ id: "vokabeln", label: "Vokabeln", href: `/m/${module.id}` }] : []),
-    { id: "vorlesungen", label: module.kind === "admin" ? "Termine" : "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
-    // exercise bank: only for regular courses (language modules have vocabulary, Administration has no exercises)
-    ...(module.kind === "course" ? [{ id: "uebungen", label: "Übungen", href: `/m/${module.id}?tab=uebungen` }] : []),
+    { id: "vorlesungen", label: module.kind === "admin" ? "Termine" : isLanguage ? "Lektionen" : "Vorlesungen", href: isLanguage ? `/m/${module.id}?tab=vorlesungen` : `/m/${module.id}` },
+    // exercise bank for courses and language modules (grammar, reading, writing); Administration has no exercises
+    ...(module.kind !== "admin" ? [{ id: "uebungen", label: "Übungen", href: `/m/${module.id}?tab=uebungen` }] : []),
     { id: "dokumente", label: "Dokumente", href: `/m/${module.id}?tab=dokumente` },
   ];
   const defaultTab = isLanguage ? "vokabeln" : "vorlesungen";
   const tab = tabs.some((t) => t.id === requestedTab) ? (requestedTab as string) : defaultTab;
+  const tabColumns = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" }[tabs.length] ?? "grid-cols-3";
 
   return (
     <>
@@ -86,7 +87,7 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
         }
       />
 
-      <div role="tablist" className={`mb-5 grid ${tabs.length === 3 ? "grid-cols-3" : "grid-cols-2"} rounded-pill border border-border bg-card p-1 text-sm`}>
+      <div role="tablist" className={`mb-5 grid ${tabColumns} rounded-pill border border-border bg-card p-1 text-sm`}>
         {tabs.map((t) => (
           <Link
             key={t.id}
@@ -107,7 +108,7 @@ export default async function ModulePage({ params, searchParams }: PageProps<"/m
       ) : tab === "vorlesungen" ? (
         <Lectures moduleId={module.id} startDate={semester.start_date} currentWeek={currentWeek} today={zurichDate(now)} />
       ) : (
-        <Documents moduleId={module.id} userId={user.id} course={module.kind === "course"} />
+        <Documents moduleId={module.id} userId={user.id} withExercises={module.kind !== "admin"} />
       )}
     </>
   );
@@ -204,7 +205,7 @@ async function Lectures({
   );
 }
 
-async function Documents({ moduleId, userId, course }: { moduleId: string; userId: string; course: boolean }) {
+async function Documents({ moduleId, userId, withExercises }: { moduleId: string; userId: string; withExercises: boolean }) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("documents")
@@ -217,7 +218,7 @@ async function Documents({ moduleId, userId, course }: { moduleId: string; userI
   return (
     <div className="space-y-4">
       <UploadButton moduleId={moduleId} userId={userId} />
-      {course && documents.length > 0 ? (
+      {withExercises && documents.length > 0 ? (
         <p className="text-sm text-muted">
           Übungen aus diesen PDFs erzeugen:{" "}
           <Link href={`/m/${moduleId}?tab=uebungen`} className="font-bold text-primary-ink">

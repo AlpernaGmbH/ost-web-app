@@ -272,7 +272,7 @@ export function StarterSetForm({ moduleId }: { moduleId: string }) {
       <input type="hidden" name="moduleId" value={moduleId} />
       <p className="text-sm">
         <span className="font-semibold">EPC1 – Units 1 bis 5</span>
-        <span className="block text-muted">104 Wörter in 5 Listen, je mit englischer Bedeutung und Beispielsatz. Bereits vorhandene Wörter werden nicht doppelt angelegt.</span>
+        <span className="block text-muted">112 Wörter in 6 Listen (die fünf offiziellen Word Lists plus Zusatzwörter aus der Musterprüfung), je mit englischer Bedeutung und Beispielsatz. Bereits vorhandene Wörter werden nicht doppelt angelegt.</span>
       </p>
       <FormMessage state={state} />
       <Button type="submit" disabled={pending}>

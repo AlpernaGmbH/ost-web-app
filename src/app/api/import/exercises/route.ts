@@ -35,11 +35,11 @@ export async function POST(request: Request) {
     .from("modules")
     .select("id, code, user_id, semesters(start_date)")
     .ilike("code", parsed.module.replace(/[\\%_]/g, "\\$&")) // escape LIKE wildcards: the code is matched literally
-    .eq("kind", "course")
+    .in("kind", ["course", "language"])
     .returns<ModuleHit[]>();
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   const hits = data ?? [];
-  if (hits.length === 0) return NextResponse.json({ ok: false, error: `Kein Kursmodul „${parsed.module}“ gefunden` }, { status: 404 });
+  if (hits.length === 0) return NextResponse.json({ ok: false, error: `Kein Modul „${parsed.module}“ mit Übungsbank gefunden` }, { status: 404 });
   if (new Set(hits.map((h) => h.user_id)).size > 1) {
     return NextResponse.json({ ok: false, error: `Mehrere Konten haben ein Modul „${parsed.module}“, nichts geschrieben` }, { status: 409 });
   }

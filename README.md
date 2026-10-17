@@ -41,11 +41,12 @@ Status direkt in der Zeile umstellen, Schnelleingabe am Ende jeder Ansicht (im K
 Tab **Vokabeln**: Listen anlegen, Wörter einzeln oder per Import einfügen, dann üben (Karten, Schreiben, Auswahl) mit Wiederholungsplan.
 Der Import kennt mehrere Listen auf einmal: eine Zeile `## Unit 1 – Titel` startet eine Liste, darunter ein Wort pro Zeile
 `Begriff | Bedeutung | Beispielsatz` (Beispielsatz optional; Trennzeichen Tab, ` | `, ` - `, `;`, `=`). Der Import ist wiederholbar, ohne Duplikate.
-Setzt `supabase/migrations/002_vocab.sql` voraus.
+Die eingebaute Vorlage enthält die fünf offiziellen EPC1 Word Lists (104 Wörter) plus acht Zusatzwörter, die die Musterprüfung abfragt (Wortfamilien
+wie *accomplishment*, *collaboration*, *durability*). Setzt `supabase/migrations/002_vocab.sql` voraus.
 
-## Übungsbank (Kursmodule)
+## Übungsbank (Kurs- und Sprachmodule)
 
-Tab **Übungen** (WMS, SYS, VHR): Aufgaben mit Thema, erlaubten Hilfsmitteln (Taschenrechner, Blatt & Stift, Formelsammlung, Tabellen, Computer, Skript/Zusammenfassung),
+Tab **Übungen** (WMS, SYS, VHR und Englisch; Englisch hat daneben den Vokabeltrainer): Aufgaben mit Thema, erlaubten Hilfsmitteln (Taschenrechner, Blatt & Stift, Formelsammlung, Tabellen, Computer, Skript/Zusammenfassung),
 Zeitschätzung, Niveau, Punkten und Quelle. Pro Aufgabe: Timer, „Lösung zeigen“ (mit Herkunft der Lösung) und Selbstbewertung
 (richtig / teilweise / falsch). Es gibt keine automatische Bewertung und keine KI in der App, Lösungen kommen aus der Quelle oder sind von Hand
 bzw. von Claude hergeleitet (so gekennzeichnet). Setzt `supabase/migrations/004_exercises.sql` und `005_aid_script.sql` voraus.
