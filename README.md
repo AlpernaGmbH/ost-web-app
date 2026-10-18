@@ -36,6 +36,12 @@ und **Kalender** (Monatsraster mit einem Punkt pro fälliger Aufgabe in der Fach
 Status direkt in der Zeile umstellen, Schnelleingabe am Ende jeder Ansicht (im Kalender mit dem gewählten Tag als Fälligkeit). Das Dashboard zeigt, was
 überfällig ist oder in den nächsten sieben Tagen ansteht; die Fach-Seite nennt die offenen Aufgaben pro Fach.
 
+**Operator-Import von Aufgaben:** `POST /api/import/tasks` mit `Authorization: Bearer <IMPORT_SECRET>` und einer JSON-Datei als Body
+(`{"format": "ost-tasks/1", "module": "SYS", "tasks": [{"title": "…", "kind": "deadline", "priority": "high", "due": "2026-12-01", "notes": "Markdown"}]}`;
+`kind`, `priority`, `status`, `due` und `notes` sind optional) legt die Aufgaben im Fach mit diesem Kürzel an. Gleicher Titel im gleichen Fach =
+Aktualisierung von Typ, Priorität, Fälligkeit und Notizen, der Status bleibt, wie er ist. Mit `?dry=1` wird nur geprüft. Gedacht für Abgabetermine und
+Prüfungen aus den Modulunterlagen; die Dateien liegen unter `import/` und sind nicht im Repo.
+
 ## Vokabeltrainer (Modul „Englisch“)
 
 Tab **Vokabeln**: Listen anlegen, Wörter einzeln oder per Import einfügen, dann üben (Karten, Schreiben, Auswahl) mit Wiederholungsplan.
