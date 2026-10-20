@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupWeek, weekBounds, type AgendaLecture } from "./agenda";
+import { groupWeek, weekBounds, withoutCancelledTwins, type AgendaLecture } from "./agenda";
 
 const MONDAY = "2026-10-05"; // W04
 const lecture = (id: string, starts_at: string, ends_at: string | null = null, status: AgendaLecture["status"] = "scheduled"): AgendaLecture => ({
@@ -67,5 +67,23 @@ describe("groupWeek", () => {
     const wed = Object.fromEntries(days[2].items.map((i) => [i.id, i]));
     expect(wed.open.ongoing).toBe(true);
     expect(wed.off.ongoing).toBe(false);
+  });
+
+  it("hides a cancelled lecture that is listed again as scheduled at the same time", () => {
+    const same = (id: string, status: AgendaLecture["status"]) => ({ ...lecture(id, "2026-10-07T13:10:00Z", "2026-10-07T13:55:00Z", status), title: "MSTA Gruppe 2" });
+    const days = groupWeek(MONDAY, [same("old", "cancelled"), same("new", "scheduled"), lecture("really-off", "2026-10-07T15:00:00Z", null, "cancelled")], now);
+    expect(days[2].items.map((i) => i.id)).toEqual(["new", "really-off"]);
+  });
+});
+
+describe("withoutCancelledTwins", () => {
+  it("keeps cancelled lectures that have no scheduled twin and never drops scheduled ones", () => {
+    const rows = [
+      { ...lecture("a", "2026-10-07T08:00:00Z", "2026-10-07T09:00:00Z", "cancelled"), title: "same" },
+      { ...lecture("b", "2026-10-07T08:00:00Z", "2026-10-07T09:00:00Z", "scheduled"), title: "same" },
+      { ...lecture("c", "2026-10-07T08:00:00Z", "2026-10-07T09:00:00Z", "cancelled"), title: "other title" },
+    ];
+    expect(withoutCancelledTwins(rows).map((r) => r.id)).toEqual(["b", "c"]);
+    expect(withoutCancelledTwins(rows.map((r) => ({ ...r, status: "cancelled" as const })))).toHaveLength(3);
   });
 });

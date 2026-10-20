@@ -8,6 +8,7 @@ import { ModuleChip } from "@/components/module-chip";
 import { StudyForm } from "@/components/study-form";
 import { Card, PageTitle } from "@/components/ui";
 import { UploadButton } from "@/components/upload-button";
+import { withoutCancelledTwins } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
 import { describeDbError } from "@/lib/db/errors";
 import { parseFilter } from "@/lib/exercises/stats";
@@ -138,7 +139,7 @@ async function Lectures({
 
   const withNote = new Set((notesRes.data ?? []).map((n) => n.lecture_id as string));
   const byWeek = new Map<number, LectureRow[]>();
-  for (const l of lecturesRes.data ?? []) {
+  for (const l of withoutCancelledTwins(lecturesRes.data ?? [])) {
     const week = weekNumber(startDate, new Date(l.starts_at));
     byWeek.set(week, [...(byWeek.get(week) ?? []), l]);
   }

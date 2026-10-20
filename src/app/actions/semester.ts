@@ -124,7 +124,7 @@ export async function syncNow(_prev: FormState, formData: FormData): Promise<For
     revalidatePath("/", "layout");
     return {
       ok: true,
-      message: `${r.created} neu, ${r.updated} aktualisiert, ${r.unchanged} unverändert, ${r.cancelled} abgesagt, ${r.administration} in Administration, ${r.unmatched} ohne Modul${r.skippedFullDay ? `, ${r.skippedFullDay} ganztägige übersprungen` : ""}.`,
+      message: `${r.created} neu, ${r.updated} aktualisiert, ${r.unchanged} unverändert, ${r.cancelled} abgesagt, ${r.administration} in Administration, ${r.unmatched} ohne Modul${r.rekeyed ? `, ${r.rekeyed} mit neuer Feed-ID übernommen` : ""}${r.merged ? `, ${r.merged} Duplikate zusammengeführt` : ""}${r.skippedFullDay ? `, ${r.skippedFullDay} ganztägige übersprungen` : ""}.`,
     };
   } catch (e) {
     return { ok: false, message: e instanceof Error ? e.message : "Sync fehlgeschlagen" };

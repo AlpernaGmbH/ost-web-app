@@ -197,6 +197,69 @@ describe("planSync", () => {
   });
 });
 
+describe("planSync when the feed changes its UIDs", () => {
+  const semester = { id: "sem", user_id: "user" };
+  const modules = [{ id: "wms", ical_match: "msta" }];
+  const now = new Date("2026-10-20T06:00:00Z");
+  const feedWith = (uid: string, status = "") => `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//test//EN
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:20261001T100000Z
+DTSTART:20261020T131000Z
+DTEND:20261020T135500Z
+SUMMARY:boek.MSTA.BOEK_TZ26.SG_Gruppe 2
+LOCATION:FZ.0137
+${status}END:VEVENT
+END:VCALENDAR`;
+  const stored = (id: string, uid: string, status: ExistingLecture["status"], location = "FZ.0137"): ExistingLecture => ({
+    id, ical_uid: uid, module_id: "wms", title: "boek.MSTA.BOEK_TZ26.SG_Gruppe 2", starts_at: "2026-10-20T13:10:00.000Z", ends_at: "2026-10-20T13:55:00.000Z", location, status,
+  });
+
+  it("re-keys the stored row instead of cancelling it and creating a twin", () => {
+    const { events } = parseFeed(feedWith("new-uid@ost"), RANGE);
+    const plan = planSync({ events, existing: [stored("row", "old-uid@ost", "scheduled")], modules, semester, now });
+    expect(plan.upserts).toEqual([]);
+    expect(plan.cancelIds).toEqual([]);
+    expect(plan.rekeys).toHaveLength(1);
+    expect(plan.rekeys[0]).toMatchObject({ id: "row", patch: { ical_uid: "new-uid@ost", status: "scheduled", module_id: "wms" } });
+    expect(plan.stats).toMatchObject({ created: 0, cancelled: 0, rekeyed: 1, merged: 0 });
+  });
+
+  it("revives a row that an earlier sync cancelled when its slot comes back under a new UID", () => {
+    const { events } = parseFeed(feedWith("new-uid@ost"), RANGE);
+    const plan = planSync({ events, existing: [stored("row", "old-uid@ost", "cancelled")], modules, semester, now });
+    expect(plan.rekeys[0].patch.status).toBe("scheduled");
+  });
+
+  it("merges a stale duplicate into the row the feed already uses", () => {
+    const { events } = parseFeed(feedWith("new-uid@ost"), RANGE);
+    const existing = [stored("old", "old-uid@ost", "cancelled"), stored("current", "new-uid@ost", "scheduled")];
+    const plan = planSync({ events, existing, modules, semester, now });
+    expect(plan.merges).toEqual([{ from: "old", into: "current" }]);
+    expect(plan.rekeys).toEqual([]);
+    expect(plan.cancelIds).toEqual([]);
+    expect(plan.stats).toMatchObject({ unchanged: 1, merged: 1 });
+  });
+
+  it("prefers the twin in the same room and leaves other rooms alone when two candidates exist", () => {
+    const { events } = parseFeed(feedWith("new-uid@ost"), RANGE);
+    const existing = [stored("other-room", "a@ost", "scheduled", "FZ.0027"), stored("same-room", "b@ost", "scheduled")];
+    const plan = planSync({ events, existing, modules, semester, now });
+    expect(plan.rekeys.map((r) => r.id)).toEqual(["same-room"]);
+    expect(plan.cancelIds).toEqual(["other-room"]);
+  });
+
+  it("keeps a cancelled event and its scheduled re-issue when the feed itself lists both", () => {
+    const { events } = parseFeed(feedWith("new-uid@ost"), RANGE);
+    const { events: cancelled } = parseFeed(feedWith("old-uid@ost", "STATUS:CANCELLED\n"), RANGE);
+    const plan = planSync({ events: [...cancelled, ...events], existing: [], modules, semester, now });
+    expect(plan.upserts.map((u) => [u.ical_uid, u.status])).toEqual([["old-uid@ost", "cancelled"], ["new-uid@ost", "scheduled"]]);
+    expect(plan.merges).toEqual([]);
+  });
+});
+
 import { matchModuleDetailed } from "./match";
 
 describe("matchModuleDetailed", () => {

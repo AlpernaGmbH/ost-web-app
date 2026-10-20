@@ -23,10 +23,22 @@ export function weekBounds(monday: string): { from: Date; to: Date } {
 
 const eventEnd = (lecture: AgendaLecture) => (lecture.ends_at ? Date.parse(lecture.ends_at) : Date.parse(lecture.starts_at) + FALLBACK_DURATION_MS);
 
+const slotKey = (l: Pick<AgendaLecture, "title" | "starts_at" | "ends_at">) =>
+  `${l.title.trim().toLowerCase()}|${Date.parse(l.starts_at)}|${l.ends_at ? Date.parse(l.ends_at) : ""}`;
+
+/**
+ * Drops a cancelled lecture when the same lecture (title and time) is also listed as scheduled:
+ * feeds that cancel a slot and re-issue it under a new UID would otherwise show every lesson twice.
+ */
+export function withoutCancelledTwins<T extends Pick<AgendaLecture, "title" | "starts_at" | "ends_at" | "status">>(lectures: T[]): T[] {
+  const scheduled = new Set(lectures.filter((l) => l.status === "scheduled").map(slotKey));
+  return lectures.filter((l) => l.status === "scheduled" || !scheduled.has(slotKey(l)));
+}
+
 /** Events keyed by their Zurich local date, each day sorted by start time. */
 export function groupByDate(lectures: AgendaLecture[], now: Date): Map<string, AgendaItem[]> {
   const byDate = new Map<string, AgendaItem[]>();
-  for (const lecture of [...lectures].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at))) {
+  for (const lecture of withoutCancelledTwins(lectures).sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at))) {
     const start = Date.parse(lecture.starts_at);
     const end = eventEnd(lecture);
     const item: AgendaItem = {
