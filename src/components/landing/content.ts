@@ -61,11 +61,11 @@ export const PRIVACY = {
   title: "Deine Daten, deine Kontrolle",
   items: [
     // sign-ups are disabled; accounts are created by hand
-    { title: "Konto nur auf Anfrage", text: "Es gibt keine Selbstregistrierung. Jedes Konto wird von Hand eingerichtet." },
+    { title: "Konto nur auf Anfrage", text: "Es gibt keine Selbstregistrierung. Jede Anfrage wird einzeln geprüft, weil die Inhalte nicht öffentlich zugänglich sind." },
     // RLS on every table, private storage bucket
-    { title: "Nur du siehst deine Inhalte", text: "Unterlagen, Übungen, Notizen und Wörter gehören zu deinem Konto. Datenbankregeln lassen keinen anderen Zugriff zu." },
+    { title: "Deine Inhalte bleiben bei dir", text: "Unterlagen, Übungen, Notizen und Wörter gehören zu deinem Konto. Zugriffsregeln in der Datenbank beschränken den Zugriff darauf." },
     // ai runs: PDFs chosen by the user, provider files deleted after the run, drafts need acceptance
-    { title: "KI nur auf deinen Klick", text: "Nur die PDFs, die du auswählst, gehen an Anthropic. Nach dem Durchlauf werden sie dort gelöscht. Entwürfe werden erst zu Übungen, wenn du sie freigibst." },
+    { title: "KI nur auf deinen Klick", text: "Nur die PDFs, die du auswählst, gehen an Anthropic. Nach dem Durchlauf löschen wir sie dort. Entwürfe sind Vorschläge und werden erst zu Übungen, wenn du sie freigibst." },
     // no analytics, no ads, no third-party cookies (checked: no such packages in the code)
     { title: "Kein Tracking", text: `Keine Analyse-Dienste, keine Werbung, keine Cookies von Dritten. Deine Daten liegen bei Supabase, Region ${PROCESSING_REGIONS.supabase}.` },
   ],
@@ -80,7 +80,7 @@ export const FAQ = [
   { q: "Was kostet es?", a: `Während der geschlossenen Beta ist ${PRODUCT_NAME} kostenlos. Preise folgen, sobald die Beta endet.` },
   {
     q: "Wie komme ich an einen Zugang?",
-    a: "Schreib uns eine E-Mail mit ein, zwei Sätzen, wofür du Pensum nutzen willst. Du bekommst deine Zugangsdaten per Mail; eine Selbstregistrierung gibt es noch nicht.",
+    a: "Schreib uns eine E-Mail mit ein, zwei Sätzen, wofür du Pensum nutzen willst. Jede Anfrage wird einzeln geprüft, weil die Inhalte nicht öffentlich zugänglich sind; passt es, bekommst du deine Zugangsdaten per Mail.",
   },
   {
     // upload-button: 50 MB per file, ZIP unpacked in the browser; ai runs: PDF only, 5 documents, 32 MB
@@ -93,7 +93,7 @@ export const FAQ = [
   },
   {
     q: "Sieht die KI mein Material?",
-    a: "Nur wenn du einen KI-Durchlauf startest, und nur die PDFs, die du dafür auswählst. Sie werden an Anthropic übertragen und nach dem Durchlauf dort gelöscht.",
+    a: "Nur wenn du einen KI-Durchlauf startest, und nur die PDFs, die du dafür auswählst. Sie werden an Anthropic übertragen und nach dem Durchlauf dort gelöscht. Die Entwürfe prüfst du selbst.",
   },
 ] as const;
 

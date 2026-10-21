@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Impressum" };
 export default function ImprintPage() {
   return (
     <LegalPage title="Impressum">
-      <h2>Betreiberin</h2>
+      <h2>Betrieb und Verantwortung</h2>
       <p>
         {OPERATOR.name}
         <br />
@@ -18,37 +18,49 @@ export default function ImprintPage() {
         <br />
         {OPERATOR.country}
       </p>
-      <p>Unternehmens-Identifikationsnummer: {OPERATOR.uid}</p>
-
-      <h2>Kontakt</h2>
       <p>
         E-Mail: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </p>
 
-      <h2>Verantwortlich für den Inhalt</h2>
-      <p>
-        {OPERATOR.responsible}, {OPERATOR.name}
-      </p>
-
       <h2>Stand des Angebots</h2>
       <p>
-        {PRODUCT_NAME} befindet sich in einer geschlossenen Beta. Konten werden auf Anfrage eingerichtet; es gibt keine Selbstregistrierung und keine
-        kostenpflichtigen Angebote.
+        {PRODUCT_NAME} befindet sich in einer geschlossenen Beta und wird laufend verändert. Es gibt keine Selbstregistrierung und keine
+        kostenpflichtigen Angebote. Funktionen können jederzeit geändert, eingeschränkt oder eingestellt werden.
       </p>
 
-      <h2>Haftung</h2>
+      <h2>Zugang</h2>
       <p>
-        Die Inhalte dieser Website wurden sorgfältig erstellt. {OPERATOR.name} übernimmt keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität.
-        Haftungsansprüche wegen Schäden materieller oder immaterieller Art, die aus dem Zugriff auf oder der Nutzung der Website und der App entstehen,
-        sind ausgeschlossen, soweit gesetzlich zulässig. Für Inhalte verlinkter Seiten Dritter sind deren Betreiber verantwortlich.
+        Weil die Inhalte in {PRODUCT_NAME} nicht öffentlich zugänglich sind, wird jede Zugangsanfrage einzeln geprüft. Es besteht kein Anspruch
+        auf ein Konto. Ein Konto kann ohne Angabe von Gründen abgelehnt, eingeschränkt oder beendet werden, insbesondere bei Missbrauch oder bei
+        Verstössen gegen Rechte Dritter.
+      </p>
+
+      <h2>Haftungsausschluss</h2>
+      <p>
+        {PRODUCT_NAME} wird im Rahmen der Beta ohne Gewähr zur Verfügung gestellt. Es besteht keine Zusicherung für Verfügbarkeit, Fehlerfreiheit,
+        Vollständigkeit oder Aktualität der Website, der App und ihrer Inhalte. Von der KI erzeugte Entwürfe können Fehler enthalten; sie sind
+        Vorschläge, die du vor der Verwendung prüfst. Für Lernerfolg, Prüfungsergebnisse oder Entscheidungen, die du auf Grundlage der App
+        triffst, wird keine Verantwortung übernommen.
+      </p>
+      <p>
+        Haftungsansprüche wegen Schäden materieller oder immaterieller Art, die aus dem Zugriff auf oder der Nutzung oder Nichtnutzung der Website
+        und der App, aus Datenverlust, Unterbrüchen oder aus fehlerhaften Inhalten entstehen, sind ausgeschlossen, soweit gesetzlich zulässig.
+        Sichere wichtige Inhalte zusätzlich selbst. Für Inhalte verlinkter Seiten Dritter sind deren Betreiber verantwortlich.
+      </p>
+
+      <h2>Hochgeladene Inhalte</h2>
+      <p>
+        Material, das du in dein Konto lädst, bleibt in deinem Konto und wird von {PRODUCT_NAME} nicht veröffentlicht. Du bist allein dafür
+        verantwortlich, dass du dieses Material besitzen und auf diese Weise nutzen darfst, und stellst {OPERATOR.name} von Ansprüchen Dritter frei,
+        die aus deinen Inhalten entstehen. Inhalte, die Rechte Dritter oder Gesetze verletzen, können ohne Vorankündigung entfernt werden.
+        Einzelheiten zur Bearbeitung stehen in der <Link href="/datenschutz">Datenschutzerklärung</Link>.
       </p>
 
       <h2>Urheberrecht</h2>
-      <p>
-        Texte, Gestaltung und Code dieser Website und der App gehören {OPERATOR.name}. Material, das du in dein Konto lädst, bleibt bei dir, ist nur
-        für dich sichtbar und wird von {PRODUCT_NAME} nicht veröffentlicht. Du bist dafür verantwortlich, dass du es nutzen darfst. Einzelheiten zur
-        Bearbeitung stehen in der <Link href="/datenschutz">Datenschutzerklärung</Link>.
-      </p>
+      <p>Texte, Gestaltung und Code dieser Website und der App gehören {OPERATOR.name}, soweit nicht anders gekennzeichnet.</p>
+
+      <h2>Anwendbares Recht</h2>
+      <p>Es gilt Schweizer Recht. Gerichtsstand ist, soweit gesetzlich zulässig, der Wohnsitz des Betreibers.</p>
     </LegalPage>
   );
 }
