@@ -18,11 +18,20 @@ test.describe("landing page (logged out)", () => {
     await page.screenshot({ path: "test-results/landing-mobile.png", fullPage: true });
   });
 
-  test("legal links are not bounced to the login", async ({ page }) => {
-    for (const path of ["/impressum", "/datenschutz", "/willkommen"]) {
-      await page.goto(path);
+  test("legal pages are public and render their headings", async ({ page }) => {
+    for (const [path, heading] of [
+      ["/impressum", "Impressum"],
+      ["/datenschutz", "Datenschutzerklärung"],
+    ] as const) {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
       await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
     }
+    await page.goto("/willkommen");
+    await expect(page).toHaveURL(/\/willkommen$/);
   });
 });
 

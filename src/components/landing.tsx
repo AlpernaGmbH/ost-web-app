@@ -1,5 +1,6 @@
 import { BookOpen, LockKeyhole, Mail, PenLine, Upload } from "lucide-react";
 import Link from "next/link";
+import { Brand } from "@/components/brand";
 import { buttonClass, Card } from "@/components/ui";
 import { CONTACT_EMAIL, PRODUCT_NAME } from "@/lib/site";
 
@@ -31,26 +32,13 @@ const STEPS = [
 
 const footerLink = "inline-flex min-h-11 items-center text-muted hover:text-foreground";
 
-/** The toggle mark of the logo, drawn with the theme tokens so it follows light and dark mode. */
-function BrandMark({ className = "" }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 48 24" className={className}>
-      <rect width="48" height="24" rx="12" fill="var(--primary)" />
-      <circle cx="33.5" cy="12" r="8" fill="var(--accent)" />
-    </svg>
-  );
-}
-
 /** Marketing page for logged-out visitors; the proxy serves it at "/" and the app at "/" once logged in. */
 export function Landing() {
   const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Zugang zu ${PRODUCT_NAME}`)}`;
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-        <span className="flex items-center gap-3">
-          <BrandMark className="h-6 w-12" />
-          <span className="wordmark text-[28px]">{PRODUCT_NAME}</span>
-        </span>
+        <Brand />
         <Link href="/login" className={buttonClass("secondary", "", "sm")}>
           Anmelden
         </Link>
