@@ -134,10 +134,9 @@ export const FOCUS = {
 
 export const FOUNDER = {
   title: "Wer dahintersteckt",
-  // Only what the founder stated: OST, Betriebsökonomie, part-time, built for own daily study, now opening it to fellow students.
+  // Only what the founder stated: OST, Betriebsökonomie, part-time, built for own daily study.
   paragraphs: [
     `Ich studiere Betriebsökonomie im Teilzeitstudium an der ${SCHOOL}. ${PRODUCT_NAME} habe ich für meinen eigenen Studienalltag gebaut: Stundenplan, Unterlagen, Übungen und Wörter an einem Ort, statt über fünf Apps verteilt.`,
-    "Jetzt öffne ich die App für Kommilitoninnen und Kommilitonen. Eigenes Material rein, üben, bis es sitzt.",
   ],
   // Each of these is rendered only once it no longer starts with "[TODO" (nothing invented, nothing shown as placeholder).
   name: "Leander Züst",
