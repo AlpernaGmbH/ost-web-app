@@ -19,7 +19,8 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
         </Link>
       </header>
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-6 sm:px-6">
-        <h1 className="display-lg">{title}</h1>
+        {/* one long word ("Datenschutzerklärung") must fit a 360 px phone: smaller below sm, wrap anywhere as a last resort */}
+        <h1 className="display-lg text-[32px] leading-[36px] [overflow-wrap:anywhere] sm:text-[40px] sm:leading-[44px]">{title}</h1>
         <p className="small mt-2 text-muted">Stand: {updated}</p>
         <div className="note-prose mt-8">{children}</div>
       </main>
