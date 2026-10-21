@@ -56,9 +56,19 @@ test.describe("landing page (logged out)", () => {
     expect(await response.text()).toMatch(/Disallow: \//);
   });
 
+  test("shows the price consistently and keeps the price note out of the page while it is a TODO", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByText("CHF 12 pro Monat", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("CHF 12.–")).toBeVisible();
+    await expect(page.getByText("[TODO: bestätigen")).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 2, name: /Ein Monat Pensum kostet etwa so viel wie ein Mittagsmenü/ })).toBeAttached();
+  });
+
   test("sections stay visible with reduced motion and without the observer", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
+    await expect(page.locator("#preis h2 [aria-hidden] span").first()).toHaveText(/Mittagsmenü/);
+    await expect(page.locator("#preis h2 [aria-hidden] span").first()).toHaveClass(/opacity-100/);
     const hidden = await page.locator("[data-reveal]").evaluateAll((els) => els.filter((e) => getComputedStyle(e).opacity !== "1").length);
     expect(hidden).toBe(0);
   });

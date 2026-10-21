@@ -1,11 +1,12 @@
-import { BookOpen, ChevronDown, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload } from "lucide-react";
+import { BookOpen, Check, ChevronDown, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/brand";
 import { buttonClass, Card } from "@/components/ui";
 import { CONTACT_EMAIL, PRODUCT_NAME } from "@/lib/site";
-import { CTA, FAQ, FAQ_TITLE, FOOTER, HERO, PRIVACY, STEPS, STEPS_TITLE, TOUR, type TourId } from "./content";
+import { COMPARISONS, CTA, FAQ, FAQ_TITLE, FOOTER, HERO, HERO_PRICE_LINE, PRICE_BIG, PRICE_NOTE, priceNoteVisible, PRICING, PRIVACY, STEPS, STEPS_TITLE, TOUR, type TourId } from "./content";
 import { DashboardScreen, DraftsScreen, ExerciseScreen, Laptop, Phone, ScheduleScreen, StepVisual, VocabScreen } from "./mockups";
+import { RotatingComparison } from "./pricing";
 import { RevealObserver } from "./reveal";
 
 const container = "mx-auto w-full max-w-5xl px-4 sm:px-6";
@@ -70,6 +71,7 @@ export function Landing() {
             <p className="label text-primary-ink">{HERO.eyebrow}</p>
             <h1 className="display-lg mt-3 md:text-[56px] md:leading-[60px]">{HERO.title}</h1>
             <p className="body-lg mt-4 max-w-2xl text-muted">{HERO.lead}</p>
+            <p className="small mt-3 font-bold text-primary-ink">{HERO_PRICE_LINE}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className={buttonClass("primary")}>
                 {HERO.login}
@@ -132,6 +134,29 @@ export function Landing() {
           </ol>
         </Section>
 
+        {/* price: one card, the comparison rotates in the heading */}
+        <Section id="preis">
+          <p className="label text-primary-ink">{PRICING.eyebrow}</p>
+          <RotatingComparison lines={COMPARISONS.map((c) => c.line)} className="display-md mt-3 max-w-3xl" />
+          <Card className="mx-auto mt-10 max-w-md">
+            <p className="display-lg">{PRICE_BIG}</p>
+            <p className="mt-1 text-muted">{PRICING.perMonth}</p>
+            <ul className="mt-6 space-y-2">
+              {PRICING.features.map((feature) => (
+                <li key={feature} className="flex gap-3">
+                  <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-primary-ink" strokeWidth={2.5} />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            {priceNoteVisible ? <p className="small mt-4 text-muted">{PRICE_NOTE}</p> : null}
+            <a href={mailto} className={buttonClass("primary", "mt-6 w-full")}>
+              <Mail aria-hidden className="size-5" strokeWidth={2.25} />
+              {PRICING.button}
+            </a>
+          </Card>
+        </Section>
+
         {/* privacy and control */}
         <Section>
           <div className="flex items-center gap-3">
@@ -180,6 +205,7 @@ export function Landing() {
             <div className="min-w-0 flex-1">
               <h2 className="heading">{CTA.title}</h2>
               <p className="mt-1 text-muted">{CTA.text}</p>
+              <p className="small mt-2 text-muted">{CTA.comparison}</p>
             </div>
             <a href={mailto} className={buttonClass("primary", "shrink-0")}>
               <Mail aria-hidden className="size-5" strokeWidth={2.25} />

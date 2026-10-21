@@ -1,6 +1,50 @@
 // Every word of the public landing page. Only claims the code backs up: see the comments next to each block.
 import { PROCESSING_REGIONS, PRODUCT_NAME } from "@/lib/site";
 
+/* ---------------------------------------------------------------- price (CHF, one place) */
+
+export const PRICE_CHF_PER_MONTH = 12;
+/** Price in running text, everywhere the same wording. */
+export const PRICE_LABEL = `CHF ${PRICE_CHF_PER_MONTH} pro Monat`;
+/** Big figure on the price card; "pro Monat" is rendered underneath. */
+export const PRICE_BIG = `CHF ${PRICE_CHF_PER_MONTH}.–`;
+// Rendered on the page only once it no longer starts with "[TODO": until then the open point stays in the code.
+export const PRICE_NOTE = "[TODO: bestätigen, ob inkl. MWST, ob monatlich kündbar, ob die Beta gratis ist]";
+export const priceNoteVisible = !PRICE_NOTE.startsWith("[TODO");
+
+/**
+ * Things that cost about CHF 12 and that many people buy without thinking. No brands, always "etwa" or
+ * "ungefähr", nobody is mocked, nothing is promised about grades. The first entry is used in the hero,
+ * the second in the closing call to action, all of them rotate in the price section.
+ */
+export const COMPARISONS: { item: string; line: string }[] = [
+  { item: "ein Mittagsmenü vom Take-away", line: "Ein Monat Pensum kostet etwa so viel wie ein Mittagsmenü vom Take-away. Nur hält es länger als bis zum Nachmittag." },
+  { item: "zweimal Kaffee und Gipfeli", line: "Ein Monat Pensum kostet ungefähr so viel wie zweimal Kaffee und Gipfeli. Der Stoff bleibt länger als das Koffein." },
+  { item: "ein Sandwich mit Getränk vom Bahnhofskiosk", line: "Ein Monat Pensum kostet etwa so viel wie ein Sandwich mit Getränk vom Bahnhofskiosk. Nur ohne Zugverspätung." },
+  { item: "ein Dürüm mit Getränk", line: "Ein Monat Pensum kostet ungefähr so viel wie ein Dürüm mit Getränk. Macht nicht satt, ist dafür einen Monat lang nützlich." },
+  { item: "ein Frühstück im Café", line: "Ein Monat Pensum kostet etwa so viel wie ein Frühstück im Café. Dafür gibt es ihn jeden Tag." },
+  { item: "ein Apéro mit zwei Getränken", line: "Ein Monat Pensum kostet ungefähr so viel wie ein Apéro mit zwei Getränken. Nur dauert er einen Monat statt einen Abend." },
+  { item: "ein Streaming-Abo", line: "Ein Monat Pensum kostet etwa so viel wie ein Streaming-Abo. Nur schaust du nicht zu, sondern übst." },
+  { item: "drei Energydrinks", line: "Ein Monat Pensum kostet ungefähr so viel wie drei Energydrinks. Wirkt weniger schnell, dafür länger." },
+];
+
+export const PRICING = {
+  eyebrow: "Preis",
+  /** read by screen readers and shown without JavaScript or with reduced motion: the first comparison */
+  staticLine: COMPARISONS[0].line,
+  perMonth: "pro Monat",
+  // every entry exists in the code: iCal sync, documents, AI drafts with acceptance, exercises with self-assessment, vocab SRS, tasks and dashboard
+  features: [
+    "Stundenplan per iCal, automatisch pro Fach",
+    "Unterlagen pro Fach hochladen",
+    "KI-Übungsentwürfe, die du prüfst und freigibst",
+    "Übungen mit Timer, Lösung und Selbstbewertung",
+    "Vokabeltrainer mit Wiederholung in Abständen",
+    "Aufgaben, Termine und Dashboard",
+  ],
+  button: "Zugang anfragen",
+} as const;
+
 export const HERO = {
   eyebrow: "Lern-App für dein Studium",
   title: "Üben, bis es sitzt.",
@@ -9,6 +53,9 @@ export const HERO = {
   request: "Zugang anfragen",
   mockupLabel: "Vorschau des Dashboards: heutige Vorlesungen, fällige Aufgaben und Übungsstand pro Fach, auf Laptop und Handy.",
 } as const;
+
+/** Small line under the hero lead: "Etwa so viel wie …: CHF 12 pro Monat." */
+export const HERO_PRICE_LINE = `Etwa so viel wie ${COMPARISONS[0].item}: ${PRICE_LABEL}.`;
 
 export type TourId = "exercises" | "vocab" | "material" | "dashboard";
 
@@ -77,7 +124,7 @@ export const FAQ_TITLE = "Fragen und Antworten";
 export const FAQ = [
   { q: `Was ist ${PRODUCT_NAME}?`, a: "Eine Lern-App für dein Studium: Stundenplan, Unterlagen, Aufgaben, Übungen und Wortschatz pro Fach, auf dem Handy und am Laptop." },
   { q: "Für wen ist es gedacht?", a: "Für Studierende, die mit ihrem eigenen Kursmaterial lernen wollen und einen Ort für alles pro Fach suchen." },
-  { q: "Was kostet es?", a: `Während der geschlossenen Beta ist ${PRODUCT_NAME} kostenlos. Preise folgen, sobald die Beta endet.` },
+  { q: "Was kostet es?", a: `${PRICE_LABEL}.` },
   {
     q: "Wie komme ich an einen Zugang?",
     a: "Schreib uns eine E-Mail mit ein, zwei Sätzen, wofür du Pensum nutzen willst. Jede Anfrage wird einzeln geprüft, weil die Inhalte nicht öffentlich zugänglich sind; passt es, bekommst du deine Zugangsdaten per Mail.",
@@ -93,6 +140,7 @@ export const CTA = {
   title: "Aktuell geschlossene Beta",
   text: "Es gibt noch keine Selbstregistrierung. Zugang gibt es auf Anfrage per E-Mail.",
   button: "Zugang anfragen",
+  comparison: COMPARISONS[1].line,
 } as const;
 
 export const FOOTER = { imprint: "Impressum", privacy: "Datenschutz", login: "Anmelden" } as const;
