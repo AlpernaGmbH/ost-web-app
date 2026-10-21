@@ -75,6 +75,13 @@ body {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 
+/* landing page: sections fade in once scrolled to. Hidden only after the observer script marked <html>,
+ * so without JavaScript (or with reduced motion) everything is simply visible. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] { transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+  html[data-reveal-ready] [data-reveal]:not([data-shown]) { opacity: 0; transform: translateY(16px); }
+}
+
 /* rendered markdown notes (react-markdown + KaTeX) */
 .note-prose {
   line-height: 1.6;

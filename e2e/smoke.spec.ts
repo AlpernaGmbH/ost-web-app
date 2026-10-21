@@ -6,6 +6,11 @@ import { expect, test } from "@playwright/test";
 
 test.describe("landing page (logged out)", () => {
   test("is served at / without a redirect and links to the login", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") errors.push(msg.text());
+    });
+    page.on("pageerror", (err) => errors.push(err.message));
     await page.goto("/");
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("heading", { level: 1, name: "Üben, bis es sitzt." })).toBeVisible();
@@ -13,9 +18,49 @@ test.describe("landing page (logged out)", () => {
     await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", /^mailto:/);
     await expect(page.getByText("Aktuell geschlossene Beta")).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(0);
+    // heading order: one h1, then only h2/h3 below it
+    const levels = await page.locator("h1, h2, h3").evaluateAll((els) => els.map((e) => Number(e.tagName[1])));
+    expect(levels[0]).toBe(1);
+    expect(levels.filter((l) => l === 1)).toHaveLength(1);
+    for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
     await page.screenshot({ path: "test-results/landing-mobile.png", fullPage: true });
+    expect(errors).toEqual([]);
+  });
+
+  for (const width of [375, 768, 1280]) {
+    test(`has no horizontal scroll at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test("FAQ accordion opens with the keyboard and reveals the answer", async ({ page }) => {
+    await page.goto("/");
+    const first = page.locator("details").first();
+    const summary = first.locator("summary");
+    await summary.focus();
+    await expect(summary).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(first).toHaveAttribute("open", "");
+    await expect(first.locator("p")).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(first).not.toHaveAttribute("open", "");
+  });
+
+  test("robots.txt is public and forbids indexing", async ({ request }) => {
+    const response = await request.get("/robots.txt", { maxRedirects: 0 });
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toMatch(/Disallow: \//);
+  });
+
+  test("sections stay visible with reduced motion and without the observer", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const hidden = await page.locator("[data-reveal]").evaluateAll((els) => els.filter((e) => getComputedStyle(e).opacity !== "1").length);
+    expect(hidden).toBe(0);
   });
 
   test("legal pages are public and render their headings", async ({ page }) => {
