@@ -4,8 +4,30 @@ import { expect, test } from "@playwright/test";
 // Smoke tests for everything that works without a Supabase backend (see playwright.config.ts).
 // Logged-in flows need a real Supabase project and are covered by the manual checklist in the README.
 
+test.describe("landing page (logged out)", () => {
+  test("is served at / without a redirect and links to the login", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Üben, bis es sitzt." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Anmelden" }).first()).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", /^mailto:/);
+    await expect(page.getByText("Aktuell geschlossene Beta")).toBeVisible();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.screenshot({ path: "test-results/landing-mobile.png", fullPage: true });
+  });
+
+  test("legal links are not bounced to the login", async ({ page }) => {
+    for (const path of ["/impressum", "/datenschutz", "/willkommen"]) {
+      await page.goto(path);
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+    }
+  });
+});
+
 test.describe("access control", () => {
-  for (const path of ["/", "/faecher", "/settings", "/ueben", "/aufgaben", "/aufgaben?view=board&done=1", "/aufgaben?view=calendar&m=2026-10&d=2026-10-08", "/aufgaben/neu?d=2026-10-08", "/aufgaben/00000000-0000-0000-0000-000000000000", "/stundenplan", "/stundenplan?view=week&w=2026-10-05", "/stundenplan?view=month&m=2026-10&d=2026-10-08", "/m/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000?tab=uebungen", "/m/00000000-0000-0000-0000-000000000000/ex/new", "/m/00000000-0000-0000-0000-000000000000/ex/drafts", "/m/00000000-0000-0000-0000-000000000000/ex/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/ex/00000000-0000-0000-0000-000000000000/edit", "/d/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000/study?mode=write"]) {
+  for (const path of ["/faecher", "/settings", "/ueben", "/aufgaben", "/aufgaben?view=board&done=1", "/aufgaben?view=calendar&m=2026-10&d=2026-10-08", "/aufgaben/neu?d=2026-10-08", "/aufgaben/00000000-0000-0000-0000-000000000000", "/stundenplan", "/stundenplan?view=week&w=2026-10-05", "/stundenplan?view=month&m=2026-10&d=2026-10-08", "/m/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000?tab=uebungen", "/m/00000000-0000-0000-0000-000000000000/ex/new", "/m/00000000-0000-0000-0000-000000000000/ex/drafts", "/m/00000000-0000-0000-0000-000000000000/ex/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/ex/00000000-0000-0000-0000-000000000000/edit", "/d/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000", "/m/00000000-0000-0000-0000-000000000000/vocab/00000000-0000-0000-0000-000000000000/study?mode=write"]) {
     test(`${path} redirects logged-out visitors to /login`, async ({ page }) => {
       await page.goto(path);
       await expect(page).toHaveURL(/\/login$/);

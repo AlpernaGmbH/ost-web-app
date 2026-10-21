@@ -26,16 +26,23 @@ export async function proxy(request: NextRequest) {
     .getClaims()
     .then(({ data }) => Boolean(data?.claims))
     .catch(() => false);
-  const onLogin = request.nextUrl.pathname === "/login";
+  const { pathname } = request.nextUrl;
 
-  if (!loggedIn && !onLogin) {
+  if (!loggedIn) {
+    // the landing page is served at "/" (rewrite keeps the URL); legal pages it links to stay reachable
+    if (pathname === "/") return NextResponse.rewrite(new URL(LANDING_PATH, request.url));
+    if (pathname === "/login" || PUBLIC_PATHS.has(pathname)) return response;
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (loggedIn && onLogin) {
+  if (pathname === "/login" || pathname === LANDING_PATH) {
     return NextResponse.redirect(new URL("/", request.url));
   }
   return response;
 }
+
+const LANDING_PATH = "/willkommen";
+// Pages a logged-out visitor may open directly (besides /login).
+const PUBLIC_PATHS = new Set([LANDING_PATH, "/impressum", "/datenschutz"]);
 
 export const config = {
   // The cron and import routes authenticate with their own bearer secrets (CRON_SECRET, IMPORT_SECRET); static assets (icons, exercise figures) and the PWA manifest stay public.
