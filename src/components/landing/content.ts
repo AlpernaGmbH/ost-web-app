@@ -1,20 +1,18 @@
 // Every word of the public landing page. Only claims the code backs up: see the comments next to each block.
 // Audience: students of the OST – Ostschweizer Fachhochschule, and nobody else. Never "offiziell", never OST
 // material as an offer, no module names unless the founder provides them ([TODO] below).
-import { INDEPENDENCE_NOTE, PROCESSING_REGIONS, PRODUCT_NAME } from "@/lib/site";
+import { INDEPENDENCE_NOTE, PRICE_CHF_PER_MONTH, PRICE_LABEL, PROCESSING_REGIONS, PRODUCT_NAME } from "@/lib/site";
 
 export const SCHOOL = "OST";
 export const SCHOOL_FULL = "OST – Ostschweizer Fachhochschule";
 
-/* ---------------------------------------------------------------- price (CHF, one place) */
+/* ---------------------------------------------------------------- price (amount in site.ts) */
 
-export const PRICE_CHF_PER_MONTH = 12;
-/** Price in running text, everywhere the same wording. */
-export const PRICE_LABEL = `CHF ${PRICE_CHF_PER_MONTH} pro Monat`;
 /** Big figure on the price card; "pro Monat" is rendered underneath. */
 export const PRICE_BIG = `CHF ${PRICE_CHF_PER_MONTH}.–`;
-// Rendered on the page only once it no longer starts with "[TODO": until then the open point stays in the code.
-export const PRICE_NOTE = "[TODO: bestätigen, ob inkl. MWST, ob monatlich kündbar, ob die Beta gratis ist]";
+// Rendered on the page only while it does not start with "[TODO". Confirmed by the founder: the beta is free, the price applies after it.
+// Still open and therefore not claimed: whether the price includes VAT and whether it is cancellable monthly.
+export const PRICE_NOTE = "In der geschlossenen Beta kostenlos. Der Preis gilt ab Ende der Beta.";
 export const priceNoteVisible = !PRICE_NOTE.startsWith("[TODO");
 
 /**
@@ -183,7 +181,7 @@ export const FAQ = [
     q: `Ist das offiziell von der ${SCHOOL}?`,
     a: `Nein. ${PRODUCT_NAME} ist ein unabhängiges Projekt eines ${SCHOOL}-Studenten und steht in keiner offiziellen Verbindung zur ${SCHOOL_FULL}.`,
   },
-  { q: "Was kostet es?", a: `${PRICE_LABEL}.` },
+  { q: "Was kostet es?", a: `In der geschlossenen Beta nichts. Nach Ende der Beta ${PRICE_LABEL}; wer dabei ist, wird vorher informiert.` },
   {
     q: "Wie komme ich an einen Zugang?",
     // "Zugang anfragen" opens WhatsApp with a prefilled message (WHATSAPP_REQUEST_TEXT in site.ts); accounts are created by hand

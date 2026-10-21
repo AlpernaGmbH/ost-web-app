@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal-page";
-import { CONTACT_EMAIL, OPERATOR, PRODUCT_NAME } from "@/lib/site";
+import { CONTACT_EMAIL, OPERATOR, PRICE_LABEL, PRODUCT_NAME } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Impressum" };
 
@@ -24,8 +24,10 @@ export default function ImprintPage() {
 
       <h2>Stand des Angebots</h2>
       <p>
-        {PRODUCT_NAME} befindet sich in einer geschlossenen Beta und wird laufend verändert. Es gibt keine Selbstregistrierung und keine
-        kostenpflichtigen Angebote. Funktionen können jederzeit geändert, eingeschränkt oder eingestellt werden.
+        {PRODUCT_NAME} befindet sich in einer geschlossenen Beta und wird laufend verändert. Während der Beta ist die Nutzung kostenlos. Nach
+        Ende der Beta kostet {PRODUCT_NAME} {PRICE_LABEL}; wer die App nutzt, wird vor dem Ende der Beta und vor dem Start der
+        kostenpflichtigen Nutzung informiert. Es gibt keine Selbstregistrierung. Funktionen können jederzeit geändert, eingeschränkt oder
+        eingestellt werden.
       </p>
 
       <h2>Zugang</h2>

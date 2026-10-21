@@ -1,6 +1,11 @@
 /** Public-facing identity of the app: the only place the public pages take their name and contact data from. */
 export const PRODUCT_NAME = "Pensum";
 
+/** Price after the beta (CHF per month), the one place it is defined; the beta itself is free. */
+export const PRICE_CHF_PER_MONTH = 12;
+/** Price in running text, everywhere the same wording. */
+export const PRICE_LABEL = `CHF ${PRICE_CHF_PER_MONTH} pro Monat`;
+
 /** Address in the Impressum and the privacy policy. Access requests go through WhatsApp instead (REQUEST_PATH). */
 export const CONTACT_EMAIL = "leander.zuest@ost.ch";
 
