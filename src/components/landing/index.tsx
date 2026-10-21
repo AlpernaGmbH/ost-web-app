@@ -1,10 +1,10 @@
-import { BookOpen, CalendarCheck, Check, ChevronDown, GraduationCap, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload, Workflow } from "lucide-react";
+import { BookOpen, CalendarCheck, Check, ChevronDown, GraduationCap, LayoutDashboard, LockKeyhole, MessageCircle, PenLine, ShieldCheck, Upload, Workflow } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/brand";
 import { buttonClass, Card } from "@/components/ui";
-import { CONTACT_EMAIL, PRODUCT_NAME } from "@/lib/site";
+import { PRODUCT_NAME, REQUEST_PATH } from "@/lib/site";
 import { COMPARISONS, CTA, FAQ, FAQ_TITLE, FOCUS, FOOTER, FOUNDER, HERO, HERO_PRICE_LINE, PRICE_BIG, PRICE_NOTE, priceNoteVisible, PRICING, PRIVACY, STEPS, STEPS_TITLE, TOUR, type TourId } from "./content";
 import { DashboardScreen, DraftsScreen, ExerciseScreen, Laptop, Phone, ScheduleScreen, StepVisual, VocabScreen } from "./mockups";
 import { RotatingComparison } from "./pricing";
@@ -13,7 +13,8 @@ import founderPhoto from "./gruender.jpg";
 
 const container = "mx-auto w-full max-w-5xl px-4 sm:px-6";
 const footerLink = "inline-flex min-h-11 items-center text-muted hover:text-foreground";
-const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Zugang zu ${PRODUCT_NAME}`)}`;
+// Plain <a>, not <Link>: the target is a redirect to WhatsApp and must not be prefetched.
+const requestHref = REQUEST_PATH;
 
 /** Founder details are shown only once the founder filled them in (never as a placeholder on the page). */
 const given = (value: string) => (value.startsWith("[TODO") ? null : value);
@@ -83,8 +84,8 @@ export function Landing() {
               <Link href="/login" className={buttonClass("primary")}>
                 {HERO.login}
               </Link>
-              <a href={mailto} className={buttonClass("secondary")}>
-                <Mail aria-hidden className="size-5" strokeWidth={2.25} />
+              <a href={requestHref} className={buttonClass("secondary")}>
+                <MessageCircle aria-hidden className="size-5" strokeWidth={2.25} />
                 {HERO.request}
               </a>
             </div>
@@ -196,8 +197,8 @@ export function Landing() {
               ))}
             </ul>
             {priceNoteVisible ? <p className="small mt-4 text-muted">{PRICE_NOTE}</p> : null}
-            <a href={mailto} className={buttonClass("primary", "mt-6 w-full")}>
-              <Mail aria-hidden className="size-5" strokeWidth={2.25} />
+            <a href={requestHref} className={buttonClass("primary", "mt-6 w-full")}>
+              <MessageCircle aria-hidden className="size-5" strokeWidth={2.25} />
               {PRICING.button}
             </a>
           </Card>
@@ -253,8 +254,8 @@ export function Landing() {
               <p className="mt-1 text-muted">{CTA.text}</p>
               <p className="small mt-2 text-muted">{CTA.comparison}</p>
             </div>
-            <a href={mailto} className={buttonClass("primary", "shrink-0")}>
-              <Mail aria-hidden className="size-5" strokeWidth={2.25} />
+            <a href={requestHref} className={buttonClass("primary", "shrink-0")}>
+              <MessageCircle aria-hidden className="size-5" strokeWidth={2.25} />
               {CTA.button}
             </a>
           </Card>

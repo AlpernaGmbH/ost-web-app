@@ -26,7 +26,7 @@ export default function PrivacyPage() {
       <h3>Zugangsanfrage und Prüfung</h3>
       <p>
         {PRODUCT_NAME} ist eine geschlossene Beta ohne Selbstregistrierung. Weil die Inhalte nicht öffentlich zugänglich sind, wird jede Anfrage
-        einzeln geprüft. Dafür bearbeiten wir die Angaben aus deiner Anfrage (Name, E-Mail-Adresse, dein Text) und entscheiden nach eigenem
+        einzeln geprüft. Dafür bearbeiten wir die Angaben aus deiner Anfrage (Name, Telefonnummer oder E-Mail-Adresse, dein Text) und entscheiden nach eigenem
         Ermessen, ob ein Konto eingerichtet wird. Die Anfrage bewahren wir auf, solange sie für die Prüfung und die Betreuung des Kontos nötig ist.
       </p>
       <h3>Konto und Anmeldung</h3>
@@ -58,8 +58,13 @@ export default function PrivacyPage() {
         Beim Aufruf der Website entstehen bei unserem Hosting-Anbieter Protokolldaten (IP-Adresse, Zeitpunkt, aufgerufene Adresse, Browser). Sie
         dienen dem sicheren Betrieb und der Fehlersuche. Wir setzen keine Analyse- oder Tracking-Dienste ein und zeigen keine Werbung.
       </p>
-      <h3>Anfragen per E-Mail</h3>
-      <p>Schreibst du uns, bearbeiten wir deine Angaben zur Beantwortung der Anfrage und bewahren die Korrespondenz dafür auf.</p>
+      <h3>Anfragen per WhatsApp oder E-Mail</h3>
+      <p>
+        Zugangsanfragen laufen über WhatsApp: Der Knopf «Zugang anfragen» öffnet einen Chat mit dem Betreiber. Dabei bearbeitet WhatsApp
+        (WhatsApp Ireland Ltd., Teil von Meta) deine Telefonnummer, deine Nachricht und Verbindungsdaten nach seinen eigenen
+        Datenschutzbestimmungen, auch ausserhalb der Schweiz; darauf haben wir keinen Einfluss. Wer WhatsApp nicht nutzen möchte, kann per E-Mail
+        an {mail} anfragen. In beiden Fällen bearbeiten wir deine Angaben zur Beantwortung der Anfrage und bewahren die Korrespondenz dafür auf.
+      </p>
 
       <h2>3. Cookies und lokaler Speicher</h2>
       <p>

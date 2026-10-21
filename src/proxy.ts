@@ -41,8 +41,8 @@ export async function proxy(request: NextRequest) {
 }
 
 const LANDING_PATH = "/willkommen";
-// Pages a logged-out visitor may open directly (besides /login).
-const PUBLIC_PATHS = new Set([LANDING_PATH, "/impressum", "/datenschutz"]);
+// Pages a logged-out visitor may open directly (besides /login); /anfrage is the WhatsApp redirect behind "Zugang anfragen".
+const PUBLIC_PATHS = new Set([LANDING_PATH, "/impressum", "/datenschutz", "/anfrage"]);
 
 export const config = {
   // The cron and import routes authenticate with their own bearer secrets (CRON_SECRET, IMPORT_SECRET); static assets (icons, exercise figures) and the PWA manifest stay public.

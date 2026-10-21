@@ -20,6 +20,7 @@ Auf dem Handy eine Leiste am unteren Rand, ab Tablet-Breite eine Spalte links, a
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Supabase → Project Settings → API)
    - `SUPABASE_SERVICE_ROLE_KEY` (nur Server, nur für den täglichen iCal-Cron)
    - `CRON_SECRET` (lange Zufallszeichenkette; Vercel sendet sie als `Authorization: Bearer …` an den Cron)
+   - `WHATSAPP_NUMBER` (internationales Format, z. B. `+41 79 000 00 00`; Ziel von „Zugang anfragen" auf der Landingpage über `/anfrage`, wird auf keiner Seite angezeigt)
 4. **Vercel**: Repo verbinden, Env-Variablen setzen (Production **und** Preview), deployen. `vercel.json` registriert den täglichen Import (05:00 UTC).
    - Ohne Env-Variablen baut die App trotzdem und zeigt eine Setup-Seite, die pro Variable anzeigt, ob sie gesetzt ist. Die `NEXT_PUBLIC_*`-Werte werden beim Build eingebacken: nach dem Setzen **neu deployen**.
    - *Settings → Deployment Protection → Vercel Authentication* auf „Only Preview Deployments" stellen, sonst verlangt auch die Production-URL einen Vercel-Login und die PWA auf dem Handy funktioniert nicht.

@@ -6,6 +6,7 @@ const env = {
   NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "dummy-key-for-smoke-tests",
   CRON_SECRET: "smoke-test-secret",
+  WHATSAPP_NUMBER: "+41 79 000 00 00", // dummy; the smoke test only checks the redirect target
 };
 
 export default defineConfig({

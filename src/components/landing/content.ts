@@ -61,7 +61,7 @@ export const HERO = {
   lead: `Stundenplan, Unterlagen, Übungen und Wortschatz für dein ${SCHOOL}-Semester an einem Ort. Auf dem Handy und am Laptop.`,
   login: "Anmelden",
   request: "Zugang anfragen",
-  access: `Nur für Studierende der ${SCHOOL}. Zugang auf Anfrage.`,
+  access: `Nur für Studierende der ${SCHOOL}. Zugang auf Anfrage per WhatsApp.`,
   mockupLabel: "Vorschau des Dashboards: heutige Vorlesungen, fällige Aufgaben und Übungsstand pro Modul, auf Laptop und Handy.",
 } as const;
 
@@ -161,7 +161,7 @@ export const PRIVACY = {
   title: "Deine Daten, deine Kontrolle",
   items: [
     // sign-ups are disabled; accounts are created by hand after review
-    { title: "Konto nur auf Anfrage", text: `Es gibt keine Selbstregistrierung. Zugang nur für Studierende der ${SCHOOL}, auf Anfrage per E-Mail; jede Anfrage wird einzeln geprüft.` },
+    { title: "Konto nur auf Anfrage", text: `Es gibt keine Selbstregistrierung. Zugang nur für Studierende der ${SCHOOL}, auf Anfrage per WhatsApp; jede Anfrage wird einzeln geprüft.` },
     // RLS on every table, private storage bucket
     { title: "Deine Inhalte bleiben bei dir", text: "Unterlagen, Übungen, Notizen und Wörter gehören zu deinem Konto. Zugriffsregeln in der Datenbank beschränken den Zugriff darauf." },
     // ai runs: PDFs chosen by the user, provider files deleted after the run, drafts need acceptance
@@ -179,7 +179,7 @@ export const FAQ = [
     q: `Was ist ${PRODUCT_NAME}?`,
     a: `Eine Lern-App für Studierende der ${SCHOOL}: Stundenplan, eigene Unterlagen, Aufgaben, Übungen und Wortschatz pro Modul, auf dem Handy und am Laptop.`,
   },
-  { q: "Wer kann mitmachen?", a: `Studierende der ${SCHOOL}. Zugang gibt es auf Anfrage per E-Mail; jede Anfrage wird einzeln geprüft.` },
+  { q: "Wer kann mitmachen?", a: `Studierende der ${SCHOOL}. Zugang gibt es auf Anfrage per WhatsApp; jede Anfrage wird einzeln geprüft.` },
   {
     q: `Ist das offiziell von der ${SCHOOL}?`,
     a: `Nein. ${PRODUCT_NAME} ist ein unabhängiges Projekt eines ${SCHOOL}-Studenten und steht in keiner offiziellen Verbindung zur ${SCHOOL_FULL}.`,
@@ -187,7 +187,8 @@ export const FAQ = [
   { q: "Was kostet es?", a: `${PRICE_LABEL}.` },
   {
     q: "Wie komme ich an einen Zugang?",
-    a: `Schreib eine E-Mail mit ein, zwei Sätzen, was du an der ${SCHOOL} studierst und wofür du Pensum nutzen willst. Passt es, bekommst du deine Zugangsdaten per Mail. Eine Selbstregistrierung gibt es nicht.`,
+    // "Zugang anfragen" opens WhatsApp with a prefilled message (WHATSAPP_REQUEST_TEXT in site.ts); accounts are created by hand
+    a: `Tipp auf «Zugang anfragen»: Das öffnet WhatsApp mit einer vorbereiteten Nachricht. Ergänze in ein, zwei Sätzen, was du an der ${SCHOOL} studierst und wofür du ${PRODUCT_NAME} nutzen willst. Passt es, bekommst du ein Konto und deine Zugangsdaten. Eine Selbstregistrierung gibt es nicht.`,
   },
   {
     // RLS per account, private storage bucket, short-lived signed links; the operator can access data for maintenance (privacy policy)
@@ -203,7 +204,7 @@ export const FAQ = [
 
 export const CTA = {
   title: "Aktuell geschlossene Beta",
-  text: `Nur für Studierende der ${SCHOOL}. Zugang gibt es auf Anfrage per E-Mail, eine Selbstregistrierung gibt es nicht.`,
+  text: `Nur für Studierende der ${SCHOOL}. Zugang gibt es auf Anfrage per WhatsApp, eine Selbstregistrierung gibt es nicht.`,
   button: "Zugang anfragen",
   comparison: COMPARISONS[1].line,
 } as const;

@@ -19,7 +19,7 @@ test.describe("landing page (logged out)", () => {
     await expect(page.getByText("[TODO", { exact: false })).toHaveCount(1); // only the Supabase region placeholder until it is filled in
     await expect(page.getByRole("img", { name: /Leander Züst, Gründer/ })).toBeVisible();
     await expect(page.getByRole("link", { name: "Anmelden" }).first()).toHaveAttribute("href", "/login");
-    await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", /^mailto:/);
+    await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", "/anfrage");
     await expect(page.getByText("Aktuell geschlossene Beta")).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     // heading order: one h1, then only h2/h3 below it
@@ -58,6 +58,16 @@ test.describe("landing page (logged out)", () => {
     const response = await request.get("/robots.txt", { maxRedirects: 0 });
     expect(response.status()).toBe(200);
     expect(await response.text()).toMatch(/Disallow: \//);
+  });
+
+  test("access requests redirect to WhatsApp and the number is printed on no page", async ({ page, request }) => {
+    const response = await request.get("/anfrage", { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()["location"]).toMatch(/^https:\/\/wa\.me\/41790000000\?text=Hallo/);
+    for (const path of ["/", "/impressum", "/datenschutz"]) {
+      await page.goto(path);
+      expect(await page.content(), `${path} must not contain the number`).not.toMatch(/41790000000|79 000 00 00|wa\.me/);
+    }
   });
 
   test("shows the price consistently and keeps the price note out of the page while it is a TODO", async ({ page }) => {
