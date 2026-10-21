@@ -1,10 +1,10 @@
-import { BookOpen, Check, ChevronDown, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload } from "lucide-react";
+import { BookOpen, CalendarCheck, Check, ChevronDown, GraduationCap, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload, UserRound, Workflow } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/brand";
 import { buttonClass, Card } from "@/components/ui";
 import { CONTACT_EMAIL, PRODUCT_NAME } from "@/lib/site";
-import { COMPARISONS, CTA, FAQ, FAQ_TITLE, FOOTER, HERO, HERO_PRICE_LINE, PRICE_BIG, PRICE_NOTE, priceNoteVisible, PRICING, PRIVACY, STEPS, STEPS_TITLE, TOUR, type TourId } from "./content";
+import { COMPARISONS, CTA, FAQ, FAQ_TITLE, FOCUS, FOOTER, FOUNDER, HERO, HERO_PRICE_LINE, PRICE_BIG, PRICE_NOTE, priceNoteVisible, PRICING, PRIVACY, STEPS, STEPS_TITLE, TOUR, type TourId } from "./content";
 import { DashboardScreen, DraftsScreen, ExerciseScreen, Laptop, Phone, ScheduleScreen, StepVisual, VocabScreen } from "./mockups";
 import { RotatingComparison } from "./pricing";
 import { RevealObserver } from "./reveal";
@@ -12,6 +12,11 @@ import { RevealObserver } from "./reveal";
 const container = "mx-auto w-full max-w-5xl px-4 sm:px-6";
 const footerLink = "inline-flex min-h-11 items-center text-muted hover:text-foreground";
 const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Zugang zu ${PRODUCT_NAME}`)}`;
+
+/** Founder details are shown only once the founder filled them in (never as a placeholder on the page). */
+const given = (value: string) => (value.startsWith("[TODO") ? null : value);
+
+const FOCUS_ICONS = [CalendarCheck, GraduationCap, Workflow] as const;
 
 const TOUR_ICONS: Record<TourId, typeof PenLine> = { exercises: PenLine, vocab: BookOpen, material: Upload, dashboard: LayoutDashboard };
 
@@ -81,6 +86,7 @@ export function Landing() {
                 {HERO.request}
               </a>
             </div>
+            <p className="small mt-4 text-muted">{HERO.access}</p>
           </div>
           <div className="relative mt-12 md:mt-16 md:pr-24">
             <Laptop label={HERO.mockupLabel}>
@@ -114,6 +120,50 @@ export function Landing() {
             </Section>
           );
         })}
+
+        {/* why only the OST */}
+        <Section id="ost">
+          <h2 className="display-md">{FOCUS.title}</h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {FOCUS.items.map((item, i) => {
+              const Icon = FOCUS_ICONS[i];
+              return (
+                <Card key={item.title}>
+                  <span className="flex size-12 items-center justify-center rounded-pill bg-primary-soft text-on-primary-soft">
+                    <Icon aria-hidden className="size-6" strokeWidth={2.25} />
+                  </span>
+                  <h3 className="heading mt-4">{item.title}</h3>
+                  <p className="mt-2 text-muted">{item.text}</p>
+                </Card>
+              );
+            })}
+          </div>
+        </Section>
+
+        {/* founder */}
+        <Section id="gruender">
+          <h2 className="display-md">{FOUNDER.title}</h2>
+          <div className="mt-8 grid items-start gap-8 md:grid-cols-[200px_1fr] md:gap-12">
+            {/* photo placeholder: no image yet, nothing invented */}
+            <div className="flex aspect-square w-40 items-center justify-center rounded-card border border-border bg-sunken text-muted md:w-full" aria-hidden>
+              <span className="flex flex-col items-center gap-2 text-sm">
+                <UserRound className="size-10" strokeWidth={1.75} />
+                {FOUNDER.photoLabel}
+              </span>
+            </div>
+            <div>
+              {given(FOUNDER.name) ? <p className="heading">{given(FOUNDER.name)}</p> : null}
+              {given(FOUNDER.semester) ? <p className="small text-muted">{given(FOUNDER.semester)}</p> : null}
+              {FOUNDER.paragraphs.map((text) => (
+                <p key={text} className="body-lg mt-4 text-muted first:mt-0">
+                  {text}
+                </p>
+              ))}
+              {given(FOUNDER.quote) ? <blockquote className="heading mt-6 border-l-4 border-primary pl-4 text-primary-ink">{given(FOUNDER.quote)}</blockquote> : null}
+              <p className="small mt-6 text-muted">{FOUNDER.note}</p>
+            </div>
+          </div>
+        </Section>
 
         {/* three steps */}
         <Section>
@@ -217,7 +267,10 @@ export function Landing() {
 
       <footer className="border-t border-border">
         <div className={`${container} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:items-center sm:justify-between`}>
-          <span className="text-muted">&copy; {new Date().getFullYear()} {PRODUCT_NAME}</span>
+          <span className="text-muted">
+            &copy; {new Date().getFullYear()} {PRODUCT_NAME}
+            <span className="mt-1 block max-w-md">{FOOTER.note}</span>
+          </span>
           <nav aria-label="Rechtliches" className="flex gap-6">
             <Link href="/impressum" className={footerLink}>
               {FOOTER.imprint}

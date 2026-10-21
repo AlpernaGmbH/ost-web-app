@@ -13,7 +13,10 @@ test.describe("landing page (logged out)", () => {
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto("/");
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Üben, bis es sitzt." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Üben, bis es sitzt/ })).toBeVisible();
+    await expect(page.getByText("Von einem OST-Studenten für OST-Studierende")).toBeVisible();
+    await expect(page.getByText("unabhängiges Projekt", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("[TODO", { exact: false })).toHaveCount(1); // only the Supabase region placeholder until it is filled in
     await expect(page.getByRole("link", { name: "Anmelden" }).first()).toHaveAttribute("href", "/login");
     await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", /^mailto:/);
     await expect(page.getByText("Aktuell geschlossene Beta")).toBeVisible();
@@ -61,13 +64,13 @@ test.describe("landing page (logged out)", () => {
     await expect(page.getByText("CHF 12 pro Monat", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("CHF 12.–")).toBeVisible();
     await expect(page.getByText("[TODO: bestätigen")).toHaveCount(0);
-    await expect(page.getByRole("heading", { level: 2, name: /Ein Monat Pensum kostet etwa so viel wie ein Mittagsmenü/ })).toBeAttached();
+    await expect(page.getByRole("heading", { level: 2, name: /Ein Monat Pensum kostet etwa so viel wie ein Mittagessen in der Mensa/ })).toBeAttached();
   });
 
   test("sections stay visible with reduced motion and without the observer", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    await expect(page.locator("#preis h2 [aria-hidden] span").first()).toHaveText(/Mittagsmenü/);
+    await expect(page.locator("#preis h2 [aria-hidden] span").first()).toHaveText(/Mittagessen in der Mensa/);
     await expect(page.locator("#preis h2 [aria-hidden] span").first()).toHaveClass(/opacity-100/);
     const hidden = await page.locator("[data-reveal]").evaluateAll((els) => els.filter((e) => getComputedStyle(e).opacity !== "1").length);
     expect(hidden).toBe(0);

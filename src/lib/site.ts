@@ -4,6 +4,9 @@ export const PRODUCT_NAME = "Pensum";
 // TODO: replace with the real contact address before the beta opens.
 export const CONTACT_EMAIL = "kontakt@example.ch";
 
+/** Shown in the footer and in the founder section of the landing page; the legal pages may quote it too. */
+export const INDEPENDENCE_NOTE = `${PRODUCT_NAME} ist ein unabhängiges Projekt und steht in keiner offiziellen Verbindung zur OST – Ostschweizer Fachhochschule.`;
+
 /** Operator named in the Impressum and the privacy policy (a private person during the closed beta). */
 export const OPERATOR = {
   name: "Leander Züst",
