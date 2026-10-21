@@ -142,8 +142,8 @@ export const FOUNDER = {
   // Each of these is rendered only once it no longer starts with "[TODO" (nothing invented, nothing shown as placeholder).
   name: "Leander Züst",
   semester: "[TODO Semester, z. B. «3. Semester»]",
-  // Wording to be approved by the founder: it is published in his name.
-  quote: "Ich wollte eine App, die mein OST-Semester so abbildet, wie es ist: Stundenplan, Module, eigene Unterlagen. Weil es sie nicht gab, habe ich sie gebaut.",
+  // The founder's own words (only spelling and punctuation fixed).
+  quote: "Moodle zu unübersichtlich, hunderte Bücher und KI nur teilweise hilfreich. Genau aus diesem Grund habe ich dieses Tool entwickelt und nutze es nun selbst täglich. Alles, was ich zum Lernen brauche, ist nun an einem Ort vereint.",
   photoAlt: "Leander Züst, Gründer von Pensum, in schwarzem T-Shirt vor heller Wand",
   note: INDEPENDENCE_NOTE,
 } as const;
