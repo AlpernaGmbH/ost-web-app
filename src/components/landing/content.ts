@@ -140,10 +140,11 @@ export const FOUNDER = {
     "Jetzt öffne ich die App für Kommilitoninnen und Kommilitonen. Eigenes Material rein, üben, bis es sitzt.",
   ],
   // Each of these is rendered only once it no longer starts with "[TODO" (nothing invented, nothing shown as placeholder).
-  name: "[TODO Name des Gründers]",
+  name: "Leander Züst",
   semester: "[TODO Semester, z. B. «3. Semester»]",
-  quote: "[TODO ein Satz als Zitat]",
-  photoLabel: "Foto folgt",
+  // Wording to be approved by the founder: it is published in his name.
+  quote: "Ich wollte eine App, die mein OST-Semester so abbildet, wie es ist: Stundenplan, Module, eigene Unterlagen. Weil es sie nicht gab, habe ich sie gebaut.",
+  photoAlt: "Leander Züst, Gründer von Pensum, in schwarzem T-Shirt vor heller Wand",
   note: INDEPENDENCE_NOTE,
 } as const;
 

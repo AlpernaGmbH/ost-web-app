@@ -17,6 +17,7 @@ test.describe("landing page (logged out)", () => {
     await expect(page.getByText("Von einem OST-Studenten für OST-Studierende")).toBeVisible();
     await expect(page.getByText("unabhängiges Projekt", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("[TODO", { exact: false })).toHaveCount(1); // only the Supabase region placeholder until it is filled in
+    await expect(page.getByRole("img", { name: /Leander Züst, Gründer/ })).toBeVisible();
     await expect(page.getByRole("link", { name: "Anmelden" }).first()).toHaveAttribute("href", "/login");
     await expect(page.getByRole("link", { name: "Zugang anfragen" }).first()).toHaveAttribute("href", /^mailto:/);
     await expect(page.getByText("Aktuell geschlossene Beta")).toBeVisible();

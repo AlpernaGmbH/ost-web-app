@@ -1,4 +1,5 @@
-import { BookOpen, CalendarCheck, Check, ChevronDown, GraduationCap, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload, UserRound, Workflow } from "lucide-react";
+import { BookOpen, CalendarCheck, Check, ChevronDown, GraduationCap, LayoutDashboard, LockKeyhole, Mail, PenLine, ShieldCheck, Upload, Workflow } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/brand";
@@ -8,6 +9,7 @@ import { COMPARISONS, CTA, FAQ, FAQ_TITLE, FOCUS, FOOTER, FOUNDER, HERO, HERO_PR
 import { DashboardScreen, DraftsScreen, ExerciseScreen, Laptop, Phone, ScheduleScreen, StepVisual, VocabScreen } from "./mockups";
 import { RotatingComparison } from "./pricing";
 import { RevealObserver } from "./reveal";
+import founderPhoto from "./gruender.jpg";
 
 const container = "mx-auto w-full max-w-5xl px-4 sm:px-6";
 const footerLink = "inline-flex min-h-11 items-center text-muted hover:text-foreground";
@@ -144,13 +146,7 @@ export function Landing() {
         <Section id="gruender">
           <h2 className="display-md">{FOUNDER.title}</h2>
           <div className="mt-8 grid items-start gap-8 md:grid-cols-[200px_1fr] md:gap-12">
-            {/* photo placeholder: no image yet, nothing invented */}
-            <div className="flex aspect-square w-40 items-center justify-center rounded-card border border-border bg-sunken text-muted md:w-full" aria-hidden>
-              <span className="flex flex-col items-center gap-2 text-sm">
-                <UserRound className="size-10" strokeWidth={1.75} />
-                {FOUNDER.photoLabel}
-              </span>
-            </div>
+            <Image src={founderPhoto} alt={FOUNDER.photoAlt} sizes="(min-width: 768px) 200px, 160px" className="w-40 rounded-card border border-border shadow-card md:w-full" />
             <div>
               {given(FOUNDER.name) ? <p className="heading">{given(FOUNDER.name)}</p> : null}
               {given(FOUNDER.semester) ? <p className="small text-muted">{given(FOUNDER.semester)}</p> : null}
