@@ -11,8 +11,8 @@ export const SCHOOL_FULL = "OST – Ostschweizer Fachhochschule";
 /** Big figure on the price card; "pro Monat" is rendered underneath. */
 export const PRICE_BIG = `CHF ${PRICE_CHF_PER_MONTH}.–`;
 // Rendered on the page only while it does not start with "[TODO". Confirmed by the founder: the beta is free, the price applies after it.
-// Still open and therefore not claimed: whether the price includes VAT and whether it is cancellable monthly.
-export const PRICE_NOTE = "In der geschlossenen Beta kostenlos. Der Preis gilt ab Ende der Beta.";
+// Still open and therefore not claimed: whether the price includes VAT.
+export const PRICE_NOTE = "In der geschlossenen Beta kostenlos. Der Preis gilt ab Ende der Beta, monatlich kündbar.";
 export const priceNoteVisible = !PRICE_NOTE.startsWith("[TODO");
 
 /**
@@ -181,7 +181,7 @@ export const FAQ = [
     q: `Ist das offiziell von der ${SCHOOL}?`,
     a: `Nein. ${PRODUCT_NAME} ist ein unabhängiges Projekt eines ${SCHOOL}-Studenten und steht in keiner offiziellen Verbindung zur ${SCHOOL_FULL}.`,
   },
-  { q: "Was kostet es?", a: `In der geschlossenen Beta nichts. Nach Ende der Beta ${PRICE_LABEL}; wer dabei ist, wird vorher informiert.` },
+  { q: "Was kostet es?", a: `In der geschlossenen Beta nichts. Nach Ende der Beta ${PRICE_LABEL}, monatlich kündbar; wer dabei ist, wird vorher informiert.` },
   {
     q: "Wie komme ich an einen Zugang?",
     // "Zugang anfragen" opens WhatsApp with a prefilled message (WHATSAPP_REQUEST_TEXT in site.ts); accounts are created by hand

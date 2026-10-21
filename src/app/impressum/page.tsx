@@ -25,7 +25,7 @@ export default function ImprintPage() {
       <h2>Stand des Angebots</h2>
       <p>
         {PRODUCT_NAME} befindet sich in einer geschlossenen Beta und wird laufend verändert. Während der Beta ist die Nutzung kostenlos. Nach
-        Ende der Beta kostet {PRODUCT_NAME} {PRICE_LABEL}; wer die App nutzt, wird vor dem Ende der Beta und vor dem Start der
+        Ende der Beta kostet {PRODUCT_NAME} {PRICE_LABEL}, monatlich kündbar; wer die App nutzt, wird vor dem Ende der Beta und vor dem Start der
         kostenpflichtigen Nutzung informiert. Es gibt keine Selbstregistrierung. Funktionen können jederzeit geändert, eingeschränkt oder
         eingestellt werden.
       </p>
