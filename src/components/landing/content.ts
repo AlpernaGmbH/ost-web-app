@@ -87,14 +87,6 @@ export const FAQ = [
     q: "Welche Dateien kann ich hochladen?",
     a: "Jede Datei bis 50 MB, pro Fach abgelegt; ZIP-Archive werden beim Hochladen entpackt. Die KI-Funktion verarbeitet PDF, bis fünf Dokumente und 32 MB pro Durchlauf.",
   },
-  {
-    q: "Wo liegen meine Daten?",
-    a: `In deinem Konto bei unserem Datenbank-Anbieter Supabase, Region ${PROCESSING_REGIONS.supabase}. Die Website läuft bei Vercel. Details stehen in der Datenschutzerklärung.`,
-  },
-  {
-    q: "Sieht die KI mein Material?",
-    a: "Nur wenn du einen KI-Durchlauf startest, und nur die PDFs, die du dafür auswählst. Sie werden an Anthropic übertragen und nach dem Durchlauf dort gelöscht. Die Entwürfe prüfst du selbst.",
-  },
 ] as const;
 
 export const CTA = {
